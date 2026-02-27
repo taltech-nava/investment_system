@@ -67,7 +67,7 @@ class LMBroker:
         except Exception as e:
             return f"Error: {str(e)}"
 
-    async def ask_batch(self, tasks, system_prompt="You are a professional financial auditor.", batch_size=5, model=None, temperature=0.7):
+    async def ask_batch(self, tasks, system="You are a professional financial auditor.", batch_size=5, model=None, temperature=0.7):
         """
         The 'Batching Knob'. Fires multiple requests concurrently using a Semaphore.
         'tasks' is a list of user_prompts.
@@ -77,7 +77,7 @@ class LMBroker:
         
         async def sem_task(user_p):
             async with semaphore:
-                return await self._async_worker(system_prompt, user_p, target_model, temperature)
+                return await self._async_worker(system, user_p, target_model, temperature)
 
         print(f"   [Batching] Firing {len(tasks)} requests (Concurrency: {batch_size})...")
         results = await asyncio.gather(*(sem_task(t) for t in tasks))

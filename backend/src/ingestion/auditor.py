@@ -51,7 +51,7 @@ class Auditor:
         os.makedirs(self.final_dir, exist_ok=True)
         os.makedirs(self.blocked_dir, exist_ok=True)
 
-        self.broker = LLMBroker(
+        self.broker = LMBroker(
             provider=AUDIT_CONFIG["provider"],
             config={"pod_id": AUDIT_CONFIG["pod_id"]}
         )
@@ -122,10 +122,9 @@ class Auditor:
             # 3. Expert Audit — majority voting across n_votes parallel LLM calls
             prompt = USER_PROMPT_TEMPLATE + f"\n\nTEXT:\n{snippet}"
             tasks = [prompt] * AUDIT_CONFIG["n_votes"]
-            raw_votes = await self.broker.call_batch(
+            raw_votes = await self.broker.ask_batch(
                 tasks,
                 system=SYSTEM_PROMPT,
-                n_votes=AUDIT_CONFIG["n_votes"],
                 batch_size=AUDIT_CONFIG["batch_size"],
                 temperature=AUDIT_CONFIG["temperature"]
             )

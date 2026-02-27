@@ -79,6 +79,7 @@ def download_corpus(subject, intent, candidates):
         try:
             print(f"      ({i+1}/{len(candidates)}) Downloading {report_id}...", end="\r")
             resp = requests.get(item['url'], timeout=15)
+            resp.raise_for_status()
             with open(filepath, 'wb') as f:
                 f.write(resp.content)
             
