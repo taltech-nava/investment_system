@@ -1,0 +1,666 @@
+### 1. Full system outline – the desired end state
+
+Think of the final system as your **personal investment intelligence platform**, with four main layers and several core modules.
+
+---
+
+#### 1.1. Core objectives
+
+- **Centralize knowledge:** all theses, trades, analyses, external opinions, and files are structured and searchable.
+- **Continuously monitor:** accounts, prices, fundamentals, news, and risk.
+- **Compare expectations vs outcomes:** systematically track forecast accuracy and thesis performance.
+- **Learn and adapt:** refine rules, heuristics, and models based on your own history.
+- **Generate actions:** alerts, reviews, and prompts that actually change decisions, not just decorate them.
+
+---
+
+#### 1.2. System architecture overview
+
+- **Data layer:** storage, schema, and file organization.
+- **Logic layer:** analytics, rules, models.
+- **Interface layer:** how you see and interact with the system.
+- **Automation layer:** scheduled tasks, alerts, and reviews.
+
+Each layer can be simple at first and more sophisticated later.
+
+---
+
+#### 1.3. Data layer – what the system knows
+
+**Entities:**
+
+- **Instrument**
+  - Ticker, ISIN, asset class (stock, ETF, crypto, loan, etc.), sector, geography, risk bucket, tags.
+
+- **Account & position**
+  - Broker/platform, instrument, size, entry/exit dates and prices, fees, realized/unrealized P&L, currency.
+
+- **Thesis**
+  - Instruments involved.
+  - Direction (long/short/avoid).
+  - Expected return range and time horizon.
+  - Key drivers and catalysts.
+  - Key risks.
+  - Valuation logic.
+  - Conviction score and confidence in forecast.
+  - Status (planned, active, closed, invalidated).
+  - Links to supporting documents (notes, spreadsheets, PDFs).
+
+- **Expectation snapshot**
+  - For each thesis at creation:
+    - Expected return distribution (e.g. base case, bull, bear).
+    - Expected volatility / drawdown tolerance.
+    - Expected path (smooth, choppy, binary).
+    - Explicit “what would make me change my mind”.
+
+- **Outcome snapshot**
+  - At review points:
+    - Actual return.
+    - Time elapsed.
+    - Max drawdown.
+    - Key events (earnings, macro, company-specific).
+    - Whether thesis played out, failed, or is still uncertain.
+
+- **External opinion**
+  - Source, author, date.
+  - Instrument/sector.
+  - Rating/target, horizon.
+  - Summary of arguments.
+  - Quality metrics (track record, transparency, conflicts).
+  - Your subjective trust score.
+
+- **Event / alert**
+  - Trigger type (price move, news, fundamental change, time-based review).
+  - Instrument/portfolio context.
+  - Your response (acted/ignored).
+  - Outcome (helpful, neutral, harmful).
+
+- **Behavioral log**
+  - Deviations from plan (panic sell, FOMO buy, ignored stop, etc.).
+  - Emotional notes if you want them (optional but powerful).
+
+All of this can live in a **local database (e.g. SQLite)** plus a structured file system for documents.
+
+---
+
+#### 1.4. Logic layer – what the system does
+
+**A. Instrument & portfolio analytics**
+
+- **Technical:**
+  - Price history, moving averages, volatility, drawdowns, trend regime.
+  - Simple signals (breakouts, mean reversion, volatility spikes).
+
+- **Fundamental:**
+  - Key ratios and trends (P/E, P/B, EV/EBITDA, margins, growth, leverage).
+  - Relative valuation vs sector and own history.
+  - Quality and cyclicality indicators.
+
+- **Portfolio:**
+  - Exposure by sector, geography, asset class, factor.
+  - Concentration, diversification, correlation.
+  - Risk metrics (volatility, drawdown, scenario stress tests).
+
+**B. Analyst/meta-analysis module**
+
+- Aggregate external opinions by instrument, sector, and source.
+- Track:
+  - Hit rates and calibration of each source.
+  - Biases (perma-bull, perma-bear, late to trend).
+  - Agreement vs dispersion across analysts.
+- Provide:
+  - Consensus view.
+  - Quality-weighted view.
+  - “Outlier” opinions worth attention.
+
+**C. Expectation vs outcome engine**
+
+- For each thesis:
+  - Compare expected vs actual return at multiple checkpoints.
+  - Compare expected vs actual time to outcome.
+  - Compare expected vs actual volatility and drawdown.
+  - Check whether key drivers and risks materialized.
+
+- For your overall process:
+  - Distribution of forecast errors (over/underestimation).
+  - Accuracy by:
+    - Asset class, sector, thesis type (value/growth/macro/turnaround).
+    - Conviction level.
+    - Time horizon.
+  - Identify systematic biases (too optimistic, too tight time horizons, etc.).
+
+**D. Learning & adaptation module**
+
+- **Rule-based learning:**
+  - Derive simple rules like:
+    - “When I predict >25% return in <6 months, I’m usually overconfident.”
+    - “My macro-driven theses underperform my company-specific theses.”
+    - “I underestimate risk in highly leveraged companies.”
+
+- **Statistical learning:**
+  - Models that estimate:
+    - Probability of thesis success given its features.
+    - Expected return adjustment based on your historical bias.
+  - Use these to:
+    - Suggest more conservative/realistic expectations.
+    - Flag “dangerous” thesis patterns.
+
+- **Process refinement:**
+  - Suggest changes to your templates and checklists.
+  - Highlight which indicators you should pay more or less attention to.
+
+---
+
+#### 1.5. Interface layer – how you experience the system
+
+**Core views:**
+
+- **Home dashboard**
+  - Portfolio snapshot.
+  - Active theses and their status.
+  - Open alerts and pending reviews.
+  - High-level learning insights (e.g. “Last quarter: your growth theses outperformed, macro theses underperformed”).
+
+- **Instrument view**
+  - Price chart + technicals.
+  - Your theses timeline.
+  - External opinions + quality scores.
+  - Your trades and outcomes.
+  - Current risk/return profile in portfolio context.
+
+- **Thesis workspace**
+  - Structured template for new theses.
+  - Embedded or linked documents.
+  - Expected return/time horizon inputs.
+  - Checklist for drivers, risks, catalysts, exit conditions.
+
+- **Review & learning view**
+  - List of theses due for review.
+  - For each: expectation vs outcome summary.
+  - Guided questions:
+    - What went right/wrong?
+    - Was the logic sound but timing off?
+    - Did something unpredictable happen?
+  - Aggregated stats and patterns.
+
+- **Analyst/meta-analysis view**
+  - For a ticker/sector:
+    - Who covers it.
+    - What they say.
+    - How good they’ve been historically.
+  - Consensus vs contrarian views.
+
+Implementation-wise, this could be a **local web app** (e.g. Streamlit/FastAPI) or a combination of **notebook dashboards + a note-taking tool** (Obsidian/Notion) in early stages.
+
+---
+
+#### 1.6. Automation layer – what runs without you
+
+- **Data refresh jobs**
+  - Daily: prices, positions.
+  - Weekly/monthly: fundamentals, macro indicators.
+  - On-demand: external opinions scraping/import.
+
+- **Monitoring & alerts**
+  - Price-based triggers (moves, breakouts, volatility).
+  - Fundamental events (earnings, dividend changes, downgrades).
+  - Thesis-based triggers (horizon reached, catalyst date, risk condition).
+  - Portfolio-based triggers (concentration, risk thresholds).
+
+- **Review scheduler**
+  - Monthly/quarterly review sessions.
+  - Automatic selection of theses to review.
+  - Summary of key divergences and learning opportunities.
+
+- **Learning updates**
+  - Periodic recalculation of:
+    - Forecast error distributions.
+    - Source quality scores.
+    - Rule-based insights and model parameters.
+
+---
+
+### 2. Step-by-step plan – how to build it without drowning
+
+Now, a phased roadmap. Each phase is a usable system on its own, not just scaffolding.
+
+---
+
+#### Phase 0 – Define standards and templates (no code yet)
+
+**Goal:** Make your thinking structured before making the system smart.
+
+- **Design a thesis template** with:
+  - Expected return range.
+  - Time horizon.
+  - Key drivers, risks, catalysts.
+  - Valuation logic.
+  - Conviction and confidence.
+- **Define a minimal taxonomy:**
+  - Asset classes, sectors, thesis types, risk buckets.
+- **Organize existing files** into a simple folder structure:
+  - `/instruments/<ticker>/`
+  - `/theses/`
+  - `/external/`
+  - `/reviews/`
+
+This alone already improves clarity.
+
+---
+
+#### Phase 1 – Minimal data backbone (MVP database)
+
+**Goal:** Get your core entities into a structured form.
+
+- **Implement a simple local database** (SQLite or even CSVs to start) with tables:
+  - Instruments
+  - Accounts & positions
+  - Theses
+  - Expectation snapshots
+- **Create basic import scripts**:
+  - From broker exports (positions, trades).
+  - From a simple thesis form (even a CSV/markdown parser).
+
+**Deliverable:** You can query:
+- “Show me all theses for ticker X.”
+- “Show me all active theses.”
+- “Show me my current portfolio with links to theses.”
+
+---
+
+#### Phase 2 – Expectation vs outcome v1 (manual + simple metrics)
+
+**Goal:** Close the loop in a basic way.
+
+- **Add outcome snapshots**:
+  - Script to compute actual return since thesis start.
+  - Store at review times (e.g. monthly).
+- **Create a simple review report**:
+  - For each thesis:
+    - Expected vs actual return.
+    - Time elapsed vs expected horizon.
+  - You manually write a short review (why it diverged).
+
+**Deliverable:** A monthly “thesis review” document or dashboard.
+
+This is the first working version of your learning engine.
+
+---
+
+#### Phase 3 – Basic dashboards and UX
+
+**Goal:** Make it pleasant and fast to use.
+
+- **Build a simple local dashboard** (e.g. Streamlit/Jupyter):
+  - Portfolio overview.
+  - List of active theses with key metrics.
+  - Instrument view with:
+    - Price chart.
+    - Linked theses.
+    - Current P&L.
+- **Add filters and search**:
+  - By ticker, sector, status, conviction, etc.
+
+**Deliverable:** You can sit down, open one interface, and see your world.
+
+---
+
+#### Phase 4 – External opinions & analyst meta-analysis v1
+
+**Goal:** Start capturing and evaluating what others say.
+
+- **Add an ExternalOpinions table**.
+- **Create a simple input workflow**:
+  - Manual entry or semi-automated parsing of:
+    - Source, rating, target, summary.
+- **Add basic tracking**:
+  - For each source:
+    - Track how often they were directionally right.
+    - Track average forecast error.
+
+**Deliverable:** For any ticker, you see:
+- Who said what.
+- Roughly how good they’ve been.
+
+---
+
+#### Phase 5 – Expectation vs outcome v2 (systematic learning)
+
+**Goal:** Turn your history into structured feedback.
+
+- **Compute forecast error metrics**:
+  - For each thesis:
+    - Error in return.
+    - Error in time horizon.
+  - Aggregate by:
+    - Sector, asset class, thesis type, conviction level.
+- **Generate simple insights**:
+  - “You tend to overestimate returns in sector X.”
+  - “Your 6–12 month horizons often need 12–18 months.”
+- **Optionally add simple models**:
+  - Regression or classification to predict:
+    - Probability of success.
+    - Adjusted expected return.
+
+**Deliverable:** A “Learning” view that shows your biases and strengths.
+
+---
+
+#### Phase 6 – Alerts and monitoring
+
+**Goal:** Make the system proactive.
+
+- **Implement scheduled jobs**:
+  - Daily price updates.
+  - Weekly fundamental updates.
+- **Define alert rules**:
+  - Price moves beyond thresholds.
+  - Thesis horizon reached.
+  - Catalyst date approaching.
+  - Portfolio concentration breaches.
+- **Create an alerts view + notifications**:
+  - Even just a daily email or a local “alerts” page.
+
+**Deliverable:** The system taps you on the shoulder when something needs attention.
+
+---
+
+#### Phase 7 – Refinement and optional sophistication
+
+**Goal:** Evolve based on what you actually use.
+
+- **Refine UX**:
+  - Remove views you don’t use.
+  - Improve the ones you rely on.
+- **Deepen analytics where it matters**:
+  - If analyst meta-analysis is useful, expand it.
+  - If behavioral insights are powerful, add more metrics.
+- **Consider light ML**:
+  - Only if you feel the marginal value is real, not just “cool”.
+
+---
+
+### 3. How to proceed from here
+
+You’ve already done the hardest part: **articulating what you actually want this system to do for you**.
+
+Next natural step is:
+
+- Design **v1 of the data model** (tables/fields) and  
+- Design **v1 of the thesis + expectation template**.
+
+################
+Absolutely — this is the perfect next step. A clean **v1 data model** and a **v1 thesis + expectation template** give you a foundation you can actually build on without drowning in complexity.
+
+Below is a structured, practical version that balances rigor with implementability. Nothing here locks you in — it’s designed to evolve.
+
+---
+
+# 📘 v1 Data Model (Tables & Fields)
+
+This version is intentionally minimal but powerful. It captures everything needed for your first MVP: storing theses, tracking expectations, linking to positions, and enabling the expectation–outcome loop.
+
+---
+
+## 🧱 1. Instruments Table
+Represents any investable asset: stock, ETF, crypto, loan, etc.
+
+| Field | Type | Description |
+|------|------|-------------|
+| instrument_id | integer (PK) | Internal unique ID |
+| ticker | text | Ticker symbol (nullable for loans/crypto) |
+| name | text | Full name |
+| asset_class | text | stock, etf, crypto, loan, etc. |
+| sector | text | Optional |
+| geography | text | Optional |
+| tags | text | Comma-separated or JSON list |
+
+---
+
+## 💼 2. Accounts Table
+Represents each broker/platform.
+
+| Field | Type | Description |
+|------|------|-------------|
+| account_id | integer (PK) | Unique ID |
+| name | text | Broker/platform name |
+| currency | text | Base currency |
+
+---
+
+## 📊 3. Positions Table
+Tracks your holdings over time.
+
+| Field | Type | Description |
+|------|------|-------------|
+| position_id | integer (PK) | Unique ID |
+| account_id | integer (FK) | Links to Accounts |
+| instrument_id | integer (FK) | Links to Instruments |
+| quantity | real | Current quantity |
+| avg_entry_price | real | Weighted average |
+| current_price | real | Updated daily |
+| unrealized_pnl | real | Computed |
+| realized_pnl | real | Computed |
+
+---
+
+## 🔁 4. Trades Table
+Optional for v1, but useful.
+
+| Field | Type | Description |
+|------|------|-------------|
+| trade_id | integer (PK) | Unique ID |
+| instrument_id | integer (FK) | |
+| account_id | integer (FK) | |
+| date | date | |
+| type | text | buy/sell |
+| quantity | real | |
+| price | real | |
+| fees | real | |
+
+---
+
+## 🧠 5. Theses Table
+The heart of the system.
+
+| Field | Type | Description |
+|------|------|-------------|
+| thesis_id | integer (PK) | Unique ID |
+| instrument_id | integer (FK) | |
+| created_at | date | |
+| status | text | planned / active / closed / invalidated |
+| direction | text | long / short / avoid |
+| conviction | integer | 1–5 |
+| confidence_in_forecast | integer | 1–5 |
+| summary | text | Short description |
+| full_text | text | Full thesis text (markdown) |
+| supporting_files | text | JSON list of file paths |
+
+---
+
+## 🎯 6. Expectation Snapshots Table
+Stores your *ex‑ante* expectations at thesis creation.
+
+| Field | Type | Description |
+|------|------|-------------|
+| expectation_id | integer (PK) | |
+| thesis_id | integer (FK) | |
+| expected_return_low | real | e.g. 10 |
+| expected_return_base | real | e.g. 20 |
+| expected_return_high | real | e.g. 35 |
+| expected_horizon_months | integer | e.g. 6–12 |
+| expected_volatility | text | low / medium / high |
+| expected_drawdown | real | e.g. -15% |
+| key_drivers | text | |
+| key_risks | text | |
+| catalysts | text | |
+| what_invalidates_thesis | text | |
+
+---
+
+## 📉 7. Outcome Snapshots Table
+Stores *ex‑post* outcomes at review time.
+
+| Field | Type | Description |
+|------|------|-------------|
+| outcome_id | integer (PK) | |
+| thesis_id | integer (FK) | |
+| review_date | date | |
+| actual_return | real | |
+| max_drawdown | real | |
+| key_events | text | |
+| divergence_summary | text | |
+| reason_for_divergence | text | |
+| updated_confidence | integer | optional |
+
+---
+
+## 📰 8. External Opinions Table
+For analyst/meta-analysis.
+
+| Field | Type | Description |
+|------|------|-------------|
+| opinion_id | integer (PK) | |
+| instrument_id | integer (FK) | |
+| source | text | bank, blog, Substack |
+| author | text | |
+| date | date | |
+| rating | text | buy/hold/sell or numeric |
+| target_price | real | optional |
+| horizon | text | |
+| summary | text | |
+| quality_score | real | your subjective rating |
+| track_record_score | real | computed later |
+
+---
+
+## 🧭 9. Behavioral Log Table
+Optional but powerful.
+
+| Field | Type | Description |
+|------|------|-------------|
+| log_id | integer (PK) | |
+| thesis_id | integer (FK) | |
+| date | date | |
+| behavior_type | text | panic sell, FOMO buy, ignored stop, etc. |
+| notes | text | |
+
+---
+
+# 📝 v1 Thesis + Expectation Template
+
+This is the template you’ll use every time you create a new thesis. It’s structured, fast to fill, and designed to support the expectation–outcome loop.
+
+---
+
+## 📌 Thesis Template (v1)
+
+```
+# Thesis: <Instrument Name / Ticker>
+**Date:**  
+**Direction:** long / short / avoid  
+**Conviction (1–5):**  
+**Confidence in Forecast (1–5):**  
+
+## Summary (2–3 sentences)
+<Short description of the idea>
+
+## Core Thesis
+- What is the main argument?
+- Why does this opportunity exist?
+- What is the market missing?
+
+## Valuation Logic
+- Current valuation
+- Target valuation
+- Key metrics (P/E, EV/EBITDA, FCF yield, etc.)
+- Relative valuation (sector, history)
+
+## Key Drivers
+- <Driver 1>
+- <Driver 2>
+- <Driver 3>
+
+## Key Risks
+- <Risk 1>
+- <Risk 2>
+- <Risk 3>
+
+## Catalysts
+- <Catalyst 1>
+- <Catalyst 2>
+
+## What Would Invalidate the Thesis
+- <Condition 1>
+- <Condition 2>
+
+## Supporting Materials
+- Links to files, notes, spreadsheets
+```
+
+---
+
+## 🎯 Expectation Snapshot Template (v1)
+
+```
+# Expectation Snapshot
+
+## Expected Return
+- Bear case: X%
+- Base case: Y%
+- Bull case: Z%
+
+## Expected Time Horizon
+- X–Y months
+
+## Expected Volatility
+- low / medium / high
+
+## Expected Drawdown Tolerance
+- e.g. -15%
+
+## Expected Path
+- smooth / choppy / binary / catalyst-driven
+
+## Notes on Forecast Confidence
+- Why do I believe this forecast is reasonable?
+- What assumptions am I making?
+```
+
+---
+
+## 🔍 Outcome Review Template (v1)
+
+```
+# Outcome Review
+
+**Review Date:**  
+**Actual Return:**  
+**Max Drawdown:**  
+
+## What Happened
+- Key events
+- Did drivers materialize?
+- Did risks materialize?
+
+## Divergence Analysis
+- Where did expectation differ from reality?
+- Was the logic wrong, timing wrong, or something unpredictable?
+
+## Behavioral Notes
+- Did I follow my plan?
+- Any emotional deviations?
+
+## Learning
+- What rule or insight should I update?
+```
+
+---
+
+# If you want, next we can design:
+- A **v1 dashboard layout**  
+- A **v1 workflow** (idea → thesis → expectation → trade → review)  
+- A **v1 folder structure** for your files  
+- Or start drafting the **MVP implementation plan**  
+
+Where would you like to go next?
