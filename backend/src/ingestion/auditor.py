@@ -1,17 +1,22 @@
 import os
 import json
+import sys
 import shutil
 import asyncio
 import csv
 from collections import Counter
 from pypdf import PdfReader
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'services'))
 from lm_broker import LMBroker
 
 # --- 1. CONFIGURATION ---
 AUDIT_CONFIG = {
     "provider": "runpod",
     "pod_id": "ia08h1alk1knf7",
-    "folder": "silver_no-intent_2024-01-01",  # Target folder from search_and_fetch module 
+    "data_root": os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"),
+    "folder": "copper_outlook_2025-01-01",  # Target folder from search_and_fetch module 
+    #"folder": "backend/src/ingestion/data/raw/copper_outlook_2025-01-01",
     "n_votes": 5,               # How many times to query the LLM per PDF for the majority vote trials
     "batch_size": 5,            # How many requests sent to broker in one batch call; infrastructure
     "temperature": 0.7,         # Variation in LLM, SLM responses, 0...1; must be > 0 for votes to diverge; 0 = identical responses every time, 1 = probably meaningless noise
@@ -42,8 +47,10 @@ RETURN JSON ONLY:
 
 class Auditor:
     def __init__(self, raw_folder_name):
-        self.raw_dir = os.path.join("data", "raw", raw_folder_name)
-        self.proc_dir = os.path.join("data", "processed", raw_folder_name)
+        #self.raw_dir = os.path.join("data", "raw", raw_folder_name)
+        self.raw_dir = os.path.join(AUDIT_CONFIG["data_root"], "raw", AUDIT_CONFIG["folder"])
+        #self.proc_dir = os.path.join("data", "processed", raw_folder_name)
+        self.proc_dir = os.path.join(AUDIT_CONFIG["data_root"], "processed", AUDIT_CONFIG["folder"])
 
         # Setup output structure
         self.final_dir = os.path.join(self.proc_dir, "final")

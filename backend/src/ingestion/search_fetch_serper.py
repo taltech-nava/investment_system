@@ -80,6 +80,28 @@ def download_corpus(subject, intent, candidates):
             print(f"      ({i+1}/{len(candidates)}) Downloading {report_id}...", end="\r")
             resp = requests.get(item['url'], timeout=15)
             resp.raise_for_status()
+
+            content_type = resp.headers.get("Content-Type", "")
+            if "pdf" not in content_type.lower():
+                print(f"      ({i+1}/{len(candidates)}) SKIPPED — not a PDF by Content-Type: {item['url']}")
+                manifest.append({
+                    "report_id": report_id,
+                    "url": item['url'],
+                    "status": "failed: Content-Type not PDF",
+                    "timestamp": datetime.now().isoformat()
+                })
+                continue
+
+            if not resp.content.startswith(b'%PDF-'):
+                print(f"      ({i+1}/{len(candidates)}) SKIPPED — not a PDF by magic bytes: {item['url']}")
+                manifest.append({
+                    "report_id": report_id,
+                    "url": item['url'],
+                    "status": "failed: magic bytes not PDF",
+                    "timestamp": datetime.now().isoformat()
+                })
+                continue            
+
             with open(filepath, 'wb') as f:
                 f.write(resp.content)
             
