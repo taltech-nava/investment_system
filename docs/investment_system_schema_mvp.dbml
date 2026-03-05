@@ -1,0 +1,108 @@
+// Investment Prediction & Learning System MVP
+
+Table users {
+  user_id int [pk, increment]
+  username varchar(100) [not null, unique]
+  email varchar(255) [not null, unique]
+  password_hash varchar(255) [not null]
+  created_at datetime [not null]
+}
+
+Table instruments {
+  instrument_id int [pk, increment]
+  ticker varchar(20) [not null]
+  name varchar(255) [not null]
+  asset_class varchar(20) [not null, note: 'stock / etf / crypto / bond / other']
+  currency varchar(10) [not null]
+}
+
+Table sources {
+  // Single table for all sources regardless of outcome.
+  // Covers accepted, rejected, and scraping failures.
+  // Search query context stored as denormalized columns — one column per dork operator for queryability.
+  source_id int [pk, increment]
+  instrument_id int [ref: > instruments.instrument_id, not null]
+  user_id int [ref: > users.user_id, not null, note: 'who ran this search']
+
+  // --- source metadata ---
+  title text [note: 'nullable; NULL only for failed; audit module generates title if missing for accepted/rejected' ]
+  institution varchar(255) [note: 'nullable']
+  author_1 varchar(255) [note: 'nullable']
+  author_2 varchar(255) [note: 'nullable']
+  author_3 varchar(255) [note: 'nullable']
+  publication_date date [note: 'nullable']
+  url text [note: 'nullable — NULL for failed fetches, scrapings or manually entered sources with no URL']
+  source_type varchar(50) [note: 'subject to discussion: equity-research / news / macro-report / quant-model / social media post / blog / other']
+  method varchar(50) [note: 'method used by the authors, subject to discussion: fundamental / technical / macro / sentiment / quant / mixed / other']
+  quality_rank tinyint [note: '1 (rubbish, irrelevant) - 5 (excellent); NULL for failed']
+  file_path text [note: 'NULL for failed scrapring or downloading']
+  fetch_date date [not null]
+
+  // --- status ---
+  status varchar(20) [not null, note: 'accepted / rejected (because of low quality or irrelevance) / failed']
+  rejection_reason varchar(50) [note: 'scraping-failure / download-failure / other; NULL if accepted or rejected']
+
+  // --- search query context: one column per dork operator ---
+  // Granular structure allows querying by individual search dimensions.
+  // e.g. "did sources from goldmansachs.com outperform sources from ubs.com?"
+  // e.g. "did intitle:forecast searches return higher quality sources than intitle:report?"
+  search_subjects json [note: 'the subject/instrument term used in search e.g. ["palladium", "lithium", "copper"]']
+  search_intents json [note: 'purpose modifiers e.g. ["outlook","forecast"]; nullable if blank']
+  search_filetypes json [note: 'filetype filters e.g. ["pdf"] or ["pdf","doc"]']
+  search_title_block json [note: 'intitle: terms as JSON array e.g. ["research","outlook","quarterly"]']
+  search_org_block json [note: 'site: domains as JSON array e.g. ["goldmansachs.com","ubs.com", "morningstar.com"]']
+  search_date_after date [note: 'the date_after filter used in search']
+  search_date_before date [note: 'the date_before filter used in search']
+  search_engine varchar(50) [note: 'e.g. google-serper']
+  search_query_full text [note: 'full constructed dork string sent to search engine; keep for auditing and reconstruction']
+  horizon_context varchar(50) [note: 'convenience: e.g. 6m-forecast, 2yr-forecast']
+  mode varchar(20) [note: 'forecast — the only mode in MVP; the mode now implemented in the next versions']
+}
+
+Table forecast_prices {
+  // One row per price prediction per instrument per maturation date.
+  // All horizons in the same table — long format.
+  forecast_price_id int [pk, increment]
+  user_id int [ref: > users.user_id, not null, note: 'who made this forecast']
+  instrument_id int [ref: > instruments.instrument_id, not null]
+  creation_date date [not null]
+  maturation_date date [not null]
+  horizon_label varchar(20) [note: 'e.g. 3m, 6m, 12m — convenience label']
+  predicted_price decimal(12,4) [not null]
+  currency varchar(10) [not null]
+  conviction tinyint [not null, note: '1 = do not believe this will happen / very low confidence - 5 = would be very surprised if it will not happen / very high confidence']
+  method varchar(100) [note: 'user-declared (gut feeling, manual calculation) or pipeline-assigned']
+  entry_mode varchar(20) [not null, note: 'pipeline / manual']
+}
+
+Table forecast_sources {
+  // Bridge table linking each price forecast to the sources used to generate it.
+  // The structural spine of the pattern-learning module.
+  // Without it, accuracy statistics are unattributable.
+  id int [pk, increment]
+  forecast_price_id int [ref: > forecast_prices.forecast_price_id, not null]
+  source_id int [ref: > sources.source_id, not null]
+}
+
+Table realised_prices {
+  // Actual price fetched at maturation date.
+  realised_price_id int [pk, increment]
+  instrument_id int [ref: > instruments.instrument_id, not null]
+  creation_date date [not null, note: 'date price was fetched']
+  actual_price decimal(12,4) [not null]
+  currency varchar(10) [not null]
+  data_source varchar(100) [note: 'e.g. yfinance']
+}
+
+Table divergence_reports {
+  // Written by the Comparison Engine at review time.
+  // price_return_error is the primary outcome variable.
+  report_id int [pk, increment]
+  forecast_price_id int [ref: > forecast_prices.forecast_price_id, not null]
+  realised_price_id int [ref: > realised_prices.realised_price_id, not null]
+  review_date date [not null]
+  price_return_error decimal(8,4) [not null, note: '(actual - predicted) / predicted']
+  direction_correct boolean [note: 'nullable — only meaningful for directional forecasts']
+  divergence_notes text [note: 'free-text, user-written']
+  user_id int [ref: > users.user_id, not null, note: 'who this report belongs to']
+}

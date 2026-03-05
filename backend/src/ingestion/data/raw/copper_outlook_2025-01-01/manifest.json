@@ -1,0 +1,67 @@
+[
+    {
+        "report_id": "COPPER-4ccc5f",
+        "url": "https://www.goldmansachs.com/pdfs/insights/goldman-sachs-research/2026-outlooks/CommoditiesOutlook2026.pdf",
+        "status": "failed: Content-Type not PDF",
+        "timestamp": "2026-02-28T01:08:05.404529"
+    },
+    {
+        "report_id": "COPPER-364dd2",
+        "url": "https://www.goldmansachs.com/pdfs/insights/awards/theoutlookforai.pdf",
+        "status": "failed: Content-Type not PDF",
+        "timestamp": "2026-02-28T01:08:06.908784"
+    },
+    {
+        "report_id": "COPPER-e7c3f9",
+        "original_title": "[PDF] OUTLOOK 2026 Promise and Pressure - J.P. Morgan",
+        "url": "https://www.jpmorgan.com/content/dam/jpmorgan/documents/wealth-management/outlook-2026.pdf",
+        "status": "success",
+        "timestamp": "2026-02-28T01:08:13.364389"
+    },
+    {
+        "report_id": "COPPER-c65929",
+        "original_title": "[PDF] Outlook 2025 Building on Strength | JP Morgan",
+        "url": "https://www.jpmorgan.com/content/dam/jpmorgan/documents/wealth-management/outlook-2025-building-on-strength.pdf",
+        "status": "success",
+        "timestamp": "2026-02-28T01:08:20.230220"
+    },
+    {
+        "report_id": "COPPER-6dcbea",
+        "url": "https://www.goldmansachs.com/pdfs/insights/goldman-sachs-exchanges/commodities-outlook-whats-driving-oil-gold-and-base-metals/transcript.pdf",
+        "status": "failed: Content-Type not PDF",
+        "timestamp": "2026-02-28T01:08:23.367797"
+    },
+    {
+        "report_id": "COPPER-17c65c",
+        "url": "https://advisor.morganstanley.com/the-bpcg-group/documents/field/b/bp/bpcg-group/9ad0c146-8898-42dc-9802-aa4094eb00ee.pdf",
+        "status": "failed: HTTPSConnectionPool(host='advisor.morganstanley.com', port=443): Read timed out. (read timeout=15)",
+        "timestamp": "2026-02-28T01:08:40.018409"
+    },
+    {
+        "report_id": "COPPER-504793",
+        "original_title": "[PDF] 2026 Outlook - Morgan Stanley",
+        "url": "https://www.morganstanley.com/im/publication/insights/flash-reports/flashreport_thebeatoutlook2026_en.pdf",
+        "status": "success",
+        "timestamp": "2026-02-28T01:08:50.061508"
+    },
+    {
+        "report_id": "COPPER-230497",
+        "url": "https://www.goldmansachs.com/pdfs/insights/pages/gs-research/2023-commodity-outlook-an-underinvested-supercycle/report.pdf",
+        "status": "failed: Content-Type not PDF",
+        "timestamp": "2026-02-28T01:08:53.553545"
+    },
+    {
+        "report_id": "COPPER-c35a45",
+        "original_title": "[PDF] Strategy Outlook Unified Global Alternatives \u2013 Hedge Funds - Railway",
+        "url": "https://www.ubs.com/global/en/assetmanagement/insights/asset-class-perspectives/hedge-funds/articles/q2-2025-uga-hf-strategy-outlook/_jcr_content/root.1032801305.file/PS9jb250ZW50L2RhbS9hc3NldHMvYXNzZXQtbWFuYWdlbWVudC1yZWltYWdpbmVkL2dsb2JhbC9ub2luZGV4L3N0YXRpYy9pbnNpZ2h0L2Fzc2V0LWNsYXNzLXBlcnNwZWN0aXZlcy9oZWRnZS1mdW5kcy9kb2NzL3VnYS1oZi1vdXRsb29rLTJxMjAyNS5wZGY=/uga-hf-outlook-2q2025.pdf",
+        "status": "success",
+        "timestamp": "2026-02-28T01:08:57.560949"
+    },
+    {
+        "report_id": "COPPER-eab453",
+        "original_title": "[PDF] Market Trend Report Key Physical Silver Investment Markets ...",
+        "url": "https://silverinstitute.org/wp-content/uploads/2025/08/NEW-Market_Trend_Report-Key_Physical_Silver_Investment_Markets_by_Metals_Focus_8-2025.pdf",
+        "status": "success",
+        "timestamp": "2026-02-28T01:09:01.556173"
+    }
+]

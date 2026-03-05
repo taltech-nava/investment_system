@@ -1,0 +1,66 @@
+[
+    {
+        "report_id": "LITHIUM-3a5ce3",
+        "url": "https://www.goldmansachs.com/pdfs/insights/goldman-sachs-research/2026-outlooks/CommoditiesOutlook2026.pdf",
+        "status": "failed: Content-Type not PDF",
+        "timestamp": "2026-02-28T01:06:50.412570"
+    },
+    {
+        "report_id": "LITHIUM-1db7c8",
+        "original_title": "[PDF] OUTLOOK 2026 Promise and Pressure - J.P. Morgan",
+        "url": "https://www.jpmorgan.com/content/dam/jpmorgan/documents/wealth-management/outlook-2026.pdf",
+        "status": "success",
+        "timestamp": "2026-02-28T01:07:03.514204"
+    },
+    {
+        "report_id": "LITHIUM-49f0de",
+        "original_title": "[PDF] Investment Outlook 2026 - J.P. Morgan Asset Management",
+        "url": "https://am.jpmorgan.com/content/dam/jpm-am-aem/global/en/insights/market-insights/investment-outlook-2026.pdf",
+        "status": "success",
+        "timestamp": "2026-02-28T01:07:09.363252"
+    },
+    {
+        "report_id": "LITHIUM-141b44",
+        "original_title": "[PDF] UBS Family Office Quarterly",
+        "url": "https://advisors.ubs.com/mediahandler/media/699314/UBS%20Family-Office-Quarterly.pdf",
+        "status": "success",
+        "timestamp": "2026-02-28T01:07:21.084227"
+    },
+    {
+        "report_id": "LITHIUM-5dc30e",
+        "url": "https://advisor.morganstanley.com/atlantic-legacy-group/documents/field/a/at/atlantic-legacy-group/Research_2025_for_Website.pdf",
+        "status": "failed: HTTPSConnectionPool(host='advisor.morganstanley.com', port=443): Read timed out. (read timeout=15)",
+        "timestamp": "2026-02-28T01:07:38.108618"
+    },
+    {
+        "report_id": "LITHIUM-4f76b3",
+        "url": "https://www.goldmansachs.com/pdfs/insights/pages/gs-research/central-bank-divergence-room-to-run/report.pdf",
+        "status": "failed: Content-Type not PDF",
+        "timestamp": "2026-02-28T01:07:42.507118"
+    },
+    {
+        "report_id": "LITHIUM-3f45e8",
+        "url": "https://www.goldmansachs.com/our-commitments/sustainability/2022-sustainability-report/multimedia/report.pdf",
+        "status": "failed: Content-Type not PDF",
+        "timestamp": "2026-02-28T01:07:45.772771"
+    },
+    {
+        "report_id": "LITHIUM-9e4731",
+        "original_title": "[PDF] Annual Report 2023 of J.P. Morgan SE",
+        "url": "https://www.jpmorgan.com/content/dam/jpm/global/disclosures/de/english-version-of-disclosures/2023-annual-report-english.pdf",
+        "status": "success",
+        "timestamp": "2026-02-28T01:07:51.172029"
+    },
+    {
+        "report_id": "LITHIUM-45d762",
+        "url": "https://www.goldmansachs.com/pdfs/insights/pages/top-of-mind/food-fuel-and-the-cost-of-living-crisis/report.pdf",
+        "status": "failed: Content-Type not PDF",
+        "timestamp": "2026-02-28T01:07:55.602514"
+    },
+    {
+        "report_id": "LITHIUM-e34a48",
+        "url": "https://www.goldmansachs.com/investor-relations/corporate-governance/sustainability-reporting/2023-awm-tcfd-report.pdf",
+        "status": "failed: Content-Type not PDF",
+        "timestamp": "2026-02-28T01:07:59.521143"
+    }
+]
