@@ -1,6 +1,10 @@
 import asyncio
 import json
+import os
+from dotenv import load_dotenv
 from openai import OpenAI, AsyncOpenAI
+
+load_dotenv()
 
 class LMBroker:
     """
@@ -17,7 +21,8 @@ class LMBroker:
         """
         self.provider = provider
         self.config = config or {}
-        self.default_model = self.config.get("default_model", "qwen2.5:7b")
+        #self.default_model = self.config.get("default_model", "qwen2.5:7b") # idled since runpod.ai is unreasonably costly, unreliable and small models offer too low quality for the task
+        self.default_model = self.config.get("default_model", "gpt-4o-mini") # use OpenAI gpt-4o-mini: 0.15usd/1M token on input,0.60usd/1M token on output 
         
         # Initialize Clients
         if self.provider == "runpod":
@@ -28,7 +33,7 @@ class LMBroker:
             self.async_client = AsyncOpenAI(base_url=base_url, api_key="ollama")
             
         elif self.provider == "openai":
-            api_key = self.config.get("openai_api_key")
+            api_key = self.config.get("OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY")
             self.client = OpenAI(api_key=api_key)
             self.async_client = AsyncOpenAI(api_key=api_key)
             

@@ -12,14 +12,15 @@ from lm_broker import LMBroker
 
 # --- 1. CONFIGURATION ---
 AUDIT_CONFIG = {
-    "provider": "runpod",
+    #"provider": "runpod",
+    "provider": "openai",
     "pod_id": "ia08h1alk1knf7",
     "data_root": os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"),
     "folder": "copper_outlook_2025-01-01",  # Target folder from search_and_fetch module 
     #"folder": "backend/src/ingestion/data/raw/copper_outlook_2025-01-01",
     "n_votes": 5,               # How many times to query the LLM per PDF for the majority vote trials
     "batch_size": 5,            # How many requests sent to broker in one batch call; infrastructure
-    "temperature": 0.7,         # Variation in LLM, SLM responses, 0...1; must be > 0 for votes to diverge; 0 = identical responses every time, 1 = probably meaningless noise
+    "temperature": 0.5,         # Variation in LLM, SLM responses, 0...1; must be > 0 for votes to diverge; 0 = identical responses every time, 1 = probably meaningless noise
     "concurrency": 2,           # Max PDFs audited simultaneously, pipeline level
     "pages_to_scan": 10,         # How many pages to read from each PDF, to get some coverage of the document, not only the first page 
     "chars_per_page": 200,     # Max characters extracted per page; can not be large
@@ -135,6 +136,7 @@ class Auditor:
                 batch_size=AUDIT_CONFIG["batch_size"],
                 temperature=AUDIT_CONFIG["temperature"]
             )
+            #print(f"[DEBUG] raw_votes: {raw_votes}")
 
             # 4. Parse votes
             parsed_votes = []

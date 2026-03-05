@@ -12,3 +12,28 @@ COPPER-e7c3f9,4,final,"The document contains elements of an institutional invest
 COPPER-c35a45,3,final,"The document lacks price targets, supply/demand data, bank disclosures, or deep sector analysis. It appears to be a marketing material with some strategic outlook and performance review but does not meet the criteria for institutional investment research."
 COPPER-504793,4,final,"The document provides asset allocation views and commentary on bonds, equities, and fixed income for the 2026 outlook. While it lacks specific price targets or detailed supply/demand data, it aligns more with high-quality macro/industry reports as it includes market views and sector insights."
 COPPER-eab453,3,final,"The document is structured like a market trend report and covers key physical silver investment markets. However, it lacks specific price targets, detailed supply/demand data, bank disclosures, or deep sector analysis that would elevate it to a higher score."
+COPPER-c65929,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-e7c3f9,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-504793,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-c35a45,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-eab453,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-c65929,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-e7c3f9,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-504793,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-c35a45,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-eab453,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-e7c3f9,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-c65929,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-504793,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-c35a45,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-eab453,0,blocked,JSON Parse Failure — all votes malformed
+COPPER-c65929,3,final,"The document provides an outlook on economic conditions and trends, which is useful for investors, but lacks specific price targets, in-depth sector analysis, or detailed supply/demand data typically found in high-quality institutional research."
+COPPER-e7c3f9,4,final,"The document snippet appears to be part of a professional investment outlook report from J.P. Morgan, discussing macroeconomic trends such as AI, inflation, and fragmentation. It includes thematic analysis relevant to institutional investors, but lacks specific price targets or detailed sector analysis that would elevate it to a score of 5."
+COPPER-c35a45,3,final,"The document provides a performance review and strategy outlook for hedge funds, which is useful for investors. However, it lacks specific price targets, detailed supply/demand data, or deep sector analysis typically found in high-quality institutional reports."
+COPPER-504793,4,final,"The document provides a monthly global market and asset allocation guide with commentary on bonds and equities, indicating a high-quality macro/industry analysis. It discusses asset allocation views and includes some insights into market conditions, although it lacks specific price targets or detailed supply/demand data."
+COPPER-eab453,3,final,"The document provides an overview of physical silver investment markets with some insights into demand trends in various countries. However, it lacks specific price targets, detailed supply/demand data, or deep sector analysis typically found in institutional reports, placing it in the category of investor decks or factsheets."
+COPPER-c65929,3,final,"The document provides a general outlook on the economy and market conditions for 2025, mentioning themes like easing global policy and capital investment. However, it lacks specific price targets, detailed supply/demand data, and deep sector analysis, which are essential for a higher score. It appears more promotional than analytical, fitting the characteristics of an investor deck or factsheet."
+COPPER-e7c3f9,4,final,"The document snippet discusses macroeconomic themes and trends, particularly focusing on AI and its implications for investment, which aligns with high-quality macro/industry reports. However, it lacks specific price targets, NAV, or detailed supply/demand data, which would elevate it to a higher score."
+COPPER-504793,4,final,"The document provides asset allocation views, outlines opinions on various sectors, and includes commentary on fixed income and equities, which indicates a high-quality macro/industry report. However, it lacks specific price targets or detailed supply/demand data typical of institutional reports."
+COPPER-c35a45,3,final,"The document includes performance reviews, strategy outlooks, and target weight percentages for various hedge fund strategies, which are useful for investors. However, it lacks specific price targets or deep sector analysis typically found in higher-rated institutional reports."
+COPPER-eab453,3,final,"The document provides an overview of physical silver investment markets across several countries, which suggests some level of analysis. However, it lacks specific price targets, detailed supply/demand data, and comprehensive sector analysis typically found in institutional reports. It appears to be more of an informational piece rather than a deep analytical report."
