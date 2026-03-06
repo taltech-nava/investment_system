@@ -1,0 +1,819 @@
+openapi: 3.0.3
+
+info:
+  title: Investment Prediction & Learning System API
+  description: >
+    API for the Investment Prediction & Learning System MVP.
+    Covers the Search & Fetch, Audit, and Sources inspection modules.
+
+
+    ## Endpoint Implementation Status
+
+
+    Each endpoint carries an `x-status` field indicating its current implementation state.
+    This field is a project-specific extension (the `x-` prefix denotes a custom field
+    not part of the OpenAPI standard). It serves as a progress tracker as well as a
+    contract marker.
+
+
+    The four stages are:
+
+
+    - `planned` — specified in the contract, no code of any kind exists yet.
+      The endpoint is agreed and designed but work has not started.
+
+    - `script-exists` — a standalone Python script implementing the underlying logic exists
+      and runs from the command line. The script is not yet structured as a FastAPI endpoint.
+      Parameters are typically hardcoded in a config section rather than accepted as arguments.
+
+    - `endpoint-ready` — the script has been refactored to accept parameters as arguments
+      rather than from hardcoded config. It is ready to be wrapped in a FastAPI route handler
+      with minimal additional work.
+
+    - `implemented` — the FastAPI endpoint exists, is registered in the application, and is
+      callable over HTTP. The endpoint honors the request and response schemas defined in this spec.
+
+
+  version: 0.1.0
+  contact:
+    name: taltech-nava
+    url: https://github.com/taltech-nava/investment_system
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: http://{server_ip}:8000
+    description: Deployed server
+    variables:
+      server_ip:
+        default: localhost
+        description: IP address of the deployment server
+
+tags:
+  - name: search
+    description: Search & Fetch module — collect raw sources from the internet
+  - name: audit
+    description: Audit module — quality rank and classify collected sources
+  - name: sources
+    description: Source inspection — query and inspect corpus state
+  - name: instruments
+    description: Reference data — instruments available in the system
+  - name: jobs
+    description: Job status — monitor long-running pipeline tasks
+
+paths:
+
+  # -------------------------
+  # SEARCH & FETCH MODULE
+  # -------------------------
+
+  /api/search:
+    post:
+      tags: [search]
+      summary: Trigger a search and fetch run
+      description: >
+        Constructs a Google dork query from the provided parameters,
+        sends it to the Serper API, downloads matching files into the
+        raw data folder, and records source metadata in the sources table.
+        Returns a job_id for status polling.
+      x-status: script-exists
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+            example:
+              user_id: 1
+              instrument_id: 3
+              subjects: ["palladium", "palladium price"]
+              intents: ["outlook", "forecast"]
+              filetypes: ["pdf"]
+              title_block: ["research", "outlook", "quarterly", "forecast"]
+              org_block: ["goldmansachs.com", "ubs.com", "imf.org", "silverinstitute.org"]
+              date_after: "2025-01-01"
+              date_before: "2025-12-31"
+              horizon_label: "6m"
+              num_results: 20
+      responses:
+        '202':
+          description: Search job accepted and running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorised — user_id not recognised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/search/corpus:
+    get:
+      tags: [search]
+      summary: Inspect raw corpus state
+      description: >
+        Returns a summary of all files collected across all search runs,
+        before audit. Breakdowns by instrument, institution, domain,
+        horizon_label, and search run date.
+        Also returns delta — what the most recent search run added.
+      x-status: planned
+      parameters:
+        - name: instrument_id
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Filter by instrument
+        - name: horizon_label
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by horizon e.g. 6m, 12m
+        - name: since
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Show only sources fetched after this date
+      responses:
+        '200':
+          description: Raw corpus summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CorpusSummary'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # -------------------------
+  # AUDIT MODULE
+  # -------------------------
+
+  /api/audit:
+    post:
+      tags: [audit]
+      summary: Trigger an audit run
+      description: >
+        Runs the Audit Module on all sources in the raw folder
+        for the specified instrument and horizon, or all sources
+        in the raw folder if no filter is provided. Each file is
+        sent to the LLM for quality ranking (1-5) and metadata
+        extraction. Results are written back to the sources table
+        with status = accepted, rejected, or failed.
+        Returns a job_id for status polling.
+        Note: current implementation assumes each source is audited once.
+        Re-running the audit on the same file corpus may produce
+        inconsistent state. Deferred to post-MVP.
+      x-status: script-exists
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditRequest'
+            example:
+              user_id: 1
+              instrument_id: 3
+              horizon_label: "6m"
+              quality_threshold: 3
+      responses:
+        '202':
+          description: Audit job accepted and running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/audit/corpus:
+    get:
+      tags: [audit]
+      summary: Inspect accepted corpus state after audit
+      description: >
+        Returns a summary of all sources that passed audit (status = accepted)
+        and are available for the Extraction & Synthesis module.
+        Breakdowns by instrument, institution, source_type, method,
+        quality_rank, and horizon_label.
+        Also returns delta per audit run — how many accepted, rejected,
+        and failed in each run and why.
+      x-status: planned
+      parameters:
+        - name: instrument_id
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Filter by instrument
+        - name: horizon_label
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by horizon
+        - name: min_quality_rank
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+          description: Filter by minimum quality rank
+      responses:
+        '200':
+          description: Accepted corpus summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditCorpusSummary'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # -------------------------
+  # SOURCES — GENERAL QUERY
+  # -------------------------
+
+  /api/sources:
+    get:
+      tags: [sources]
+      summary: Query sources table
+      description: >
+        General-purpose endpoint for querying the sources table with filters.
+        Returns individual source records — not aggregated summaries.
+        Used by the frontend to display detailed source lists.
+      x-status: planned
+      parameters:
+        - name: instrument_id
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [accepted, rejected, failed]
+        - name: horizon_label
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: min_quality_rank
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+        - name: institution
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: source_type
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of sources matching filters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  sources:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Source'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/sources/{source_id}:
+    get:
+      tags: [sources]
+      summary: Get a single source record
+      description: Returns full details for one source including all metadata and search context.
+      x-status: planned
+      parameters:
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Source record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Source'
+        '404':
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # -------------------------
+  # INSTRUMENTS
+  # -------------------------
+
+  /api/instruments:
+    get:
+      tags: [instruments]
+      summary: List all instruments
+      description: >
+        Returns all instruments in the database.
+        Used to populate dropdowns in the UI for search and forecast entry.
+      x-status: planned
+      responses:
+        '200':
+          description: List of instruments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Instrument'
+
+    post:
+      tags: [instruments]
+      summary: Add a new instrument
+      description: Adds a new instrument to the instruments table.
+      x-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstrumentCreate'
+      responses:
+        '201':
+          description: Instrument created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Instrument'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # -------------------------
+  # JOB STATUS POLLING
+  # -------------------------
+
+  /api/jobs/{job_id}:
+    get:
+      tags: [jobs]
+      summary: Get job status
+      description: >
+        Returns the current status of a long-running pipeline job
+        (search run or audit run). Poll this endpoint after triggering
+        a search or audit to check for completion.
+      x-status: planned
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# -------------------------
+# COMPONENTS / SCHEMAS
+# -------------------------
+
+components:
+  schemas:
+
+    SearchRequest:
+      type: object
+      required:
+        - user_id
+        - instrument_id
+        - subjects
+        - horizon_label
+      properties:
+        user_id:
+          type: integer
+          description: ID of the user triggering the search
+        instrument_id:
+          type: integer
+          description: ID of the instrument being researched
+        subjects:
+          type: array
+          items:
+            type: string
+          description: Subject/instrument terms for the dork query
+        intents:
+          type: array
+          items:
+            type: string
+          description: Purpose modifiers e.g. outlook, forecast
+        filetypes:
+          type: array
+          items:
+            type: string
+          description: File type filters e.g. pdf, doc
+        title_block:
+          type: array
+          items:
+            type: string
+          description: intitle terms for the dork query
+        org_block:
+          type: array
+          items:
+            type: string
+          description: site domains for the dork query
+        date_after:
+          type: string
+          format: date
+          description: Lower bound date filter
+        date_before:
+          type: string
+          format: date
+          description: Upper bound date filter
+        horizon_label:
+          type: string
+          description: Horizon this search is conducted for e.g. 6m, 12m
+        num_results:
+          type: integer
+          default: 20
+          description: Number of results to fetch from search engine
+
+    AuditRequest:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: integer
+        instrument_id:
+          type: integer
+          description: Filter — audit only sources for this instrument; null = audit all in raw folder
+        horizon_label:
+          type: string
+          description: Filter — audit only sources for this horizon; null = all horizons
+        quality_threshold:
+          type: integer
+          minimum: 1
+          maximum: 5
+          default: 3
+          description: Minimum quality rank to be considered accepted
+
+    JobAccepted:
+      type: object
+      properties:
+        job_id:
+          type: string
+          description: Unique identifier for this job run
+        status:
+          type: string
+          enum: [queued, running]
+        message:
+          type: string
+
+    JobStatus:
+      type: object
+      properties:
+        job_id:
+          type: string
+        status:
+          type: string
+          enum: [queued, running, completed, failed]
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        result_summary:
+          type: object
+          description: Module-specific summary of what was produced
+          additionalProperties: true
+        error:
+          type: string
+          nullable: true
+
+    CorpusSummary:
+      type: object
+      properties:
+        total_files:
+          type: integer
+        by_instrument:
+          type: array
+          items:
+            type: object
+            properties:
+              instrument_id:
+                type: integer
+              name:
+                type: string
+              count:
+                type: integer
+        by_institution:
+          type: array
+          items:
+            type: object
+            properties:
+              institution:
+                type: string
+              count:
+                type: integer
+        by_horizon_label:
+          type: array
+          items:
+            type: object
+            properties:
+              horizon_label:
+                type: string
+              count:
+                type: integer
+        last_run_delta:
+          type: object
+          properties:
+            run_date:
+              type: string
+              format: date
+            files_added:
+              type: integer
+
+    AuditCorpusSummary:
+      type: object
+      properties:
+        total_accepted:
+          type: integer
+        total_rejected:
+          type: integer
+        total_failed:
+          type: integer
+        by_instrument:
+          type: array
+          items:
+            type: object
+            properties:
+              instrument_id:
+                type: integer
+              name:
+                type: string
+              accepted:
+                type: integer
+              rejected:
+                type: integer
+              failed:
+                type: integer
+        by_institution:
+          type: array
+          items:
+            type: object
+            properties:
+              institution:
+                type: string
+              accepted:
+                type: integer
+              avg_quality_rank:
+                type: number
+        by_source_type:
+          type: array
+          items:
+            type: object
+            properties:
+              source_type:
+                type: string
+              count:
+                type: integer
+        by_quality_rank:
+          type: array
+          items:
+            type: object
+            properties:
+              quality_rank:
+                type: integer
+              count:
+                type: integer
+        last_run_delta:
+          type: object
+          properties:
+            run_date:
+              type: string
+              format: date
+            accepted:
+              type: integer
+            rejected:
+              type: integer
+            failed:
+              type: integer
+            rejection_reasons:
+              type: object
+              additionalProperties:
+                type: integer
+
+    Source:
+      type: object
+      properties:
+        source_id:
+          type: integer
+        user_id:
+          type: integer
+        instrument_id:
+          type: integer
+        title:
+          type: string
+          nullable: true
+        institution:
+          type: string
+          nullable: true
+        author_1:
+          type: string
+          nullable: true
+        author_2:
+          type: string
+          nullable: true
+        author_3:
+          type: string
+          nullable: true
+        publication_date:
+          type: string
+          format: date
+          nullable: true
+        url:
+          type: string
+          nullable: true
+        source_type:
+          type: string
+          nullable: true
+        method:
+          type: string
+          nullable: true
+        quality_rank:
+          type: integer
+          nullable: true
+        file_path:
+          type: string
+          nullable: true
+        fetch_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [accepted, rejected, failed]
+        rejection_reason:
+          type: string
+          nullable: true
+        search_subjects:
+          type: array
+          items:
+            type: string
+        search_intents:
+          type: array
+          items:
+            type: string
+          nullable: true
+        search_filetypes:
+          type: array
+          items:
+            type: string
+          nullable: true
+        search_title_block:
+          type: array
+          items:
+            type: string
+          nullable: true
+        search_org_block:
+          type: array
+          items:
+            type: string
+          nullable: true
+        search_date_after:
+          type: string
+          format: date
+          nullable: true
+        search_date_before:
+          type: string
+          format: date
+          nullable: true
+        search_engine:
+          type: string
+          nullable: true
+        search_query_full:
+          type: string
+          nullable: true
+        horizon_label:
+          type: string
+          nullable: true
+        mode:
+          type: string
+
+    Instrument:
+      type: object
+      properties:
+        instrument_id:
+          type: integer
+        ticker:
+          type: string
+        name:
+          type: string
+        asset_class:
+          type: string
+        currency:
+          type: string
+
+    InstrumentCreate:
+      type: object
+      required:
+        - ticker
+        - name
+        - asset_class
+        - currency
+      properties:
+        ticker:
+          type: string
+        name:
+          type: string
+        asset_class:
+          type: string
+          enum: [stock, etf, crypto, bond, other]
+        currency:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
