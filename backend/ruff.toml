@@ -1,0 +1,36 @@
+line-length = 100 
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+docstring-code-format = true
+
+[lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # Pyflakes (undefined names, unused imports)
+    "I",    # isort (import order)
+    "B",    # flake8-bugbear (common bugs/design issues)
+    "UP",   # pyupgrade (modernise syntax)
+    "N",    # pep8-naming conventions
+    "C90",  # mccabe complexity
+    "RUF",  # Ruff-specific rules
+    "SIM",  # flake8-simplify (simplify conditions/code)
+    "TCH",  # flake8-type-checking (TYPE_CHECKING imports, avoids circular imports)
+    "ANN",  # flake8-annotations (enforce type hints — core to FastAPI)
+]
+ignore = [
+    "E501",   # line too long — handled by formatter
+    "B008",   # function call in default arg — required for FastAPI Depends(), Query(), Body() etc.
+    "ANN101", # missing type annotation for self
+    "ANN102", # missing type annotation for cls
+    "ANN401", # disallow Any — too strict in practice
+]
+
+[lint.isort]
+known-first-party = ["src"]
+
+[lint.mccabe]
+max-complexity = 10
