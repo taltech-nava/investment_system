@@ -1,2 +1,18 @@
 search engine credentials.txt
 .env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+.venv/
+venv/
+
+# Ruff cache
+.ruff_cache/
+
+# Pyright / type checker cache
+.pyright/
+
