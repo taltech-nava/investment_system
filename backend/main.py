@@ -1,5 +1,6 @@
-from backend.routes import system
 from fastapi import FastAPI
+
+from routes import system
 
 app = FastAPI(
     title="Investment system",
