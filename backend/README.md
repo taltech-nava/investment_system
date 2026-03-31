@@ -54,6 +54,8 @@ This repo is a monorepo — a `frontend/` (Next.js) directory will sit alongside
 
 ## Setup
 
+Copy the database environment template `.env.example` to `.env` and update its values (for example: database host, port, username, password, and database name). Ensure the `.env` file is correctly configured before running migrations or starting the application.
+
 ```bash
 cd backend
 uv sync            # creates .venv and installs all dependencies (including dev)
