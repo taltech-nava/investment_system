@@ -14,6 +14,8 @@ FastAPI backend for the Investment System. Python 3.12+, managed with [uv](https
 - [Formatting and linting (Ruff)](#formatting-and-linting-ruff)
 - [Tests (pytest)](#tests-pytest)
 - [Running from the monorepo root](#running-from-the-monorepo-root)
+- [App settings](#app-settings)
+- [Alembic (migrations)](#alembic-migrations)
 - [Recommendations](#recommendations)
 
 ---
@@ -22,13 +24,18 @@ FastAPI backend for the Investment System. Python 3.12+, managed with [uv](https
 
 ```
 backend/
-├── main.py              # FastAPI app entry point
-├── pyproject.toml       # Project metadata and dependencies
-├── ruff.toml            # Ruff formatter and linter config
-├── routes/              # Route handlers (one file per domain)
-│   └── system.py
-├── src/                 # Business logic, services, ingestion
-└── tests/               # Pytest test suite
+├── main.py                        # FastAPI app entry point
+├── pyproject.toml                 # Project metadata and dependencies
+├── ruff.toml                      # Ruff formatter and linter config
+├── alembic/                       # DB migration environment (alembic)
+├── config/                        # App configuration and settings
+├── database/                      # DB engine/session helpers
+├── routes/                        # Route handlers (one file per domain)
+├── src/                           # Business logic and domain code
+│   ├── models/                    # DB models (ORM / Pydantic models)
+│   ├── repositories/              # Data access layer / repositories
+│   └── services/                  # Business services (use repositories)
+└── tests/                         # Pytest test suite
 ```
 
 This repo is a monorepo — a `frontend/` (Next.js) directory will sit alongside `backend/`. All commands below assume you are working within the `backend/` directory
@@ -50,6 +57,8 @@ This repo is a monorepo — a `frontend/` (Next.js) directory will sit alongside
 ```bash
 cd backend
 uv sync            # creates .venv and installs all dependencies (including dev)
+# initialise DB schema after dependencies are installed
+uv run alembic upgrade head
 ```
 
 ---
@@ -59,6 +68,13 @@ uv sync            # creates .venv and installs all dependencies (including dev)
 ```bash
 cd backend
 uv run fastapi dev              # development server with auto-reload — http://localhost:8000
+```
+
+To run the database 
+
+```bash
+# from the repository root 
+docker-compose up 
 ```
 
 API docs are available at:
@@ -126,10 +142,51 @@ Tests live in `tests/`. Test files must be named `test_*.py` and test functions 
 
 ---
 
+
+### App settings (pydantic-settings)
+
+We use `pydantic-settings` to centralise configuration. Define a `Settings` class in `config/settings.py` and expose a module-level `settings` instance so application code can import configuration with:
+
+```python
+from config.settings import settings
+
+# example usage
+settings.database.postgres_user
+```
+
+`pydantic-settings` will load values from environment variables, `.env` files, or other configured sources — see the library docs for advanced patterns.
+
+
+---
+
+### Alembic (migrations)
+
+- Create a new migration (autogenerate):
+
+```bash
+cd backend
+uv run alembic revision -m "create account table"
+```
+
+- Apply migrations:
+
+```bash
+uv run alembic upgrade head
+```
+
+- Revert the most recent migration:
+
+```bash
+uv run alembic downgrade -1
+```
+
+---
+
 ## Recommendations
 
 - **`uv.lock` in git** — always commit the lockfile. This guarantees reproducible installs across machines and CI.
 - **Never commit `.venv/`** — it's in `.gitignore` and is local to each machine. Run `uv sync` to recreate it.
 - **Type hints everywhere** — the linter enforces this (`ANN` rules). FastAPI uses type hints at runtime for request validation and OpenAPI schema generation, so they are functional, not just documentation.
-- **Pydantic models for route responses** — prefer `BaseModel` over `dict` return types. Gives you validation, serialisation, and auto-generated OpenAPI schemas.
+- **Pydantic models for route responses** — prefer `BaseModel` return types. Gives you validation, serialisation, and auto-generated OpenAPI schemas.
 - **One router per domain** — keep routes split by feature (e.g. `routes/system.py`, `routes/items.py`) and include them in `main.py`. Avoid putting route handlers directly in `main.py`.
+  - **__init__.py files** — Include `__init__.py` in package directories so Python recognises them as packages; this keeps imports predictable in development and test environments.
