@@ -1,0 +1,21 @@
+[project]
+name = "investment-system"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "openai>=2.30.0",
+    "pandas>=3.0.1",
+    "playwright>=1.58.0",
+    "playwright-stealth>=2.0.2",
+    "pypdf>=6.9.2",
+    "python-dotenv>=1.2.2",
+    "requests>=2.33.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.8",
+]
