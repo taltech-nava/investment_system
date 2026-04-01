@@ -1,14 +1,17 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from database.engine import ping_db
+
 
 class HealthResponse(BaseModel):
-    status: str
+    app_status: str
+    db_status: str
 
 
 router = APIRouter()
 
 
-@router.get("/health", summary="Health check", description="Returns API status")
+@router.get("/health", summary="Health check", description="Returns API and database status")
 def read_health() -> HealthResponse:
-    return HealthResponse(status="OK")
+    return HealthResponse(app_status="OK", db_status="OK" if ping_db() else "error")
