@@ -1,0 +1,40 @@
+from __future__ import annotations
+
+from datetime import date
+
+from sqlmodel import Session, select
+
+from src.models.forecast import Forecast
+from src.models.publisher import Publisher
+
+
+class ForecastRepository:
+    def save(self, session: Session, forecast: Forecast) -> Forecast:
+        session.add(forecast)
+        session.commit()
+        session.refresh(forecast)
+        return forecast
+
+    def exists(self, session: Session, instrument_id: int, publisher_id: int, prediction_date: date) -> bool:
+        return (
+            session.exec(
+                select(Forecast).where(
+                    Forecast.instrument_id == instrument_id,
+                    Forecast.publisher_id == publisher_id,
+                    Forecast.prediction_date == prediction_date,
+                )
+            ).first()
+            is not None
+        )
+
+    def get_or_create_publisher(self, session: Session, institution: str) -> Publisher:
+        publisher = session.exec(select(Publisher).where(Publisher.institution == institution)).first()
+        if not publisher:
+            publisher = Publisher(institution=institution)
+            session.add(publisher)
+            session.commit()
+            session.refresh(publisher)
+        return publisher
+
+
+forecast_repository = ForecastRepository()

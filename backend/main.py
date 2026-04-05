@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from database.engine import ping_db
-from routes import instrument_classes, instruments, system
+from routes import ingest, instrument_classes, instruments, system
 
 
 @asynccontextmanager
@@ -22,6 +22,7 @@ app = FastAPI(
 )
 
 app.include_router(system.router, tags=["System"])
+app.include_router(ingest.router, tags=["Ingestion"])
 app.include_router(instruments.router, tags=["Instruments"])
 app.include_router(instrument_classes.router, tags=["Instrument Classes"])
 
