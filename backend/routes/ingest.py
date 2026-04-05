@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
+from sqlmodel import Session  # noqa: TC002
 
 from database.session import get_session
 from src.models.forecast import Forecast
@@ -50,16 +50,15 @@ def ingest_yfinance(ticker: str, session: Session = Depends(get_session)) -> dic
     # Fetch and save realised closing price for today
     closing_price = yfinance_service.fetch_realised_price(ticker, date.today())
     saved_price = 0
-    if closing_price is not None:
-        if not price_repository.get_by_instrument_and_date(session, instrument.id, date.today()):
-            price = Price(
-                instrument_id=instrument.id,
-                price_date=date.today(),
-                price=closing_price,
-                currency=instrument.currency,
-                data_source="yfinance",
-            )
-            price_repository.save(session, price)
-            saved_price = 1
+    if closing_price is not None and not price_repository.get_by_instrument_and_date(session, instrument.id, date.today()):
+        price = Price(
+            instrument_id=instrument.id,
+            price_date=date.today(),
+            price=closing_price,
+            currency=instrument.currency,
+            data_source="yfinance",
+        )
+        price_repository.save(session, price)
+        saved_price = 1
 
     return {"ticker": ticker, "forecasts_saved": saved_forecasts, "prices_saved": saved_price}

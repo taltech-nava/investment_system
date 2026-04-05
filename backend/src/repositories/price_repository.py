@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from datetime import date
+from typing import TYPE_CHECKING
 
 from sqlmodel import Session, select
+
+if TYPE_CHECKING:
+    from datetime import date
 
 from src.models.price import Price
 
