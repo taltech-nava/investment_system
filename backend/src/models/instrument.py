@@ -4,6 +4,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .forecast import Forecast
+    from .forecast_aggregate import ForecastAggregate
     from .instrument_class import InstrumentClass
     from .price import Price
 
@@ -20,3 +21,4 @@ class Instrument(SQLModel, table=True):
     instrument_class: Optional["InstrumentClass"] = Relationship(back_populates="instruments")
     prices: list["Price"] = Relationship(back_populates="instrument")
     forecasts: list["Forecast"] = Relationship(back_populates="instrument")
+    forecast_aggregates: list["ForecastAggregate"] = Relationship(back_populates="instrument")

@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
 from pydantic import field_validator, model_validator
-from sqlalchemy import Column, Numeric, SmallInteger
+from sqlalchemy import CheckConstraint, Column, Numeric, SmallInteger
 from sqlmodel import Field, Relationship, SQLModel
 
 from config.settings import settings
@@ -11,6 +11,7 @@ from config.settings import settings
 PREDICTED_PRICE_MAX = Decimal("99999999.9999")
 
 if TYPE_CHECKING:
+    from .aggregate_component import AggregateComponent
     from .forecast_source import ForecastSource
     from .instrument import Instrument
     from .publisher import Publisher
@@ -19,6 +20,12 @@ if TYPE_CHECKING:
 
 class Forecast(SQLModel, table=True):
     __tablename__ = "forecasts"
+    __table_args__ = (
+        CheckConstraint(
+            "estimate_type IN ('source_point_estimate', 'llm_point_estimate', 'llm_scenario_estimate')",
+            name="chk_forecast_estimate_type",
+        ),
+    )
 
     id: int | None = Field(default=None, primary_key=True)
     instrument_id: int = Field(foreign_key="instruments.id", index=True)
@@ -51,6 +58,7 @@ class Forecast(SQLModel, table=True):
     publisher: Optional["Publisher"] = Relationship(back_populates="forecasts")
     reports: list["Report"] = Relationship(back_populates="forecast")
     forecast_sources: list["ForecastSource"] = Relationship(back_populates="forecast")
+<<<<<<< HEAD
 
 
 class ForecastCreate(SQLModel):
@@ -129,3 +137,6 @@ class ForecastRead(SQLModel):
 class ForecastOptionsRead(SQLModel):
     estimate_types: list[str]
     scenarios: list[str]
+=======
+    aggregate_components: list["AggregateComponent"] = Relationship(back_populates="forecast")
+>>>>>>> 6ba6d72 (add forecast_aggregates and aggregate_components tables)
