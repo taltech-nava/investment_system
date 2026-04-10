@@ -29,7 +29,7 @@ class RawResult:
     title: str | None
     url: str | None
     snippet: str | None            # short excerpt returned by Serper
-    full_text: str | None          # full article body extracted by trafilatura
+    #full_text: str | None          # full article body extracted by trafilatura
     published_date: date | None    # parsed from Serper's date field where available
     authors: list[str] = field(default_factory=list)
     fetch_date: date = field(default_factory=date.today)
@@ -96,7 +96,7 @@ class SerperClient:
             title=item.get("title"),
             url=url,
             snippet=item.get("snippet"),
-            full_text=self._fetch_full_text(url) if url else None,
+            #full_text=self._fetch_full_text(url) if url else None,
             published_date=self._parse_date(item.get("date")),
             fetch_date=date.today(),
         )
@@ -123,5 +123,5 @@ if __name__ == "__main__":
         print("URL:  ", r.url)
         print("DATE: ", r.published_date)
         print("SNIPPET:", r.snippet)
-        print("TEXT:", r.full_text)
+        #print("TEXT:", r.full_text)
         print("-" * 50)

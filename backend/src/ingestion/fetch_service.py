@@ -25,7 +25,7 @@ class FetchService:
         self,
         session: Session,
         serper_client: SerperClient,
-        query_template: str = '{ticker} stock "price target" (raises OR raised OR upgrade OR downgrade OR outlook)',
+        query_template: str = '{ticker} stock "price target" (raise OR lower OR upgrad OR downgrad OR outlook)',
     ) -> None:
         self._session = session
         self._serper = serper_client
@@ -76,7 +76,8 @@ class FetchService:
         source = Source(publisher_id=publisher.id,
                         title=raw.title,
                         file_path=raw.url,
-                        content=raw.full_text,
+                        #content=raw.full_text,
+						snippet_text=raw.snippet,
                         search_subjects=[instrument.ticker],
                         search_query_full=raw.query,
                         search_engine="serper",

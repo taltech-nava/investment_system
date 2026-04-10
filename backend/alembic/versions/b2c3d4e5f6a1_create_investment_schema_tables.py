@@ -56,6 +56,7 @@ def upgrade() -> None:
         sa.Column("publisher_id", sa.Integer(), nullable=True),
         sa.Column("title", sa.Text(), nullable=True),
         sa.Column("file_path", sa.Text(), nullable=True),
+        sa.Column("snippet_text", sa.Text(), nullable=True),
         sa.Column("search_subjects", sa.JSON(), nullable=True),
         sa.Column("search_intents", sa.JSON(), nullable=True),
         sa.Column("search_filetypes", sa.JSON(), nullable=True),
@@ -72,6 +73,7 @@ def upgrade() -> None:
         sa.Column("rejection_reason", sa.String(length=20), nullable=True),
         sa.ForeignKeyConstraint(["publisher_id"], ["publishers.id"]),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("file_path", name="uq_sources_file_path"),
     )
 
     op.create_table(

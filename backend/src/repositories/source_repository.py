@@ -7,6 +7,9 @@ from sqlmodel import Session, select
 
 from src.models.source import Source
 
+from sqlalchemy.dialects.postgresql import insert
+from sqlmodel import select
+
 
 class SourceRepository:
 
@@ -15,10 +18,27 @@ class SourceRepository:
     # ------------------------------------------------------------------
 
     def create(self, session: Session, source: Source) -> Source:
-        session.add(source)
+        data = source.model_dump(exclude={"id"})  # or source.dict() + pop("id")
+    
+        stmt = (
+            insert(Source)
+            .values(**data)
+            .on_conflict_do_nothing(index_elements=["file_path"])
+            .returning(Source)
+        )
+    
+        result = session.execute(stmt)
+        obj = result.scalar_one_or_none()
+    
         session.commit()
-        session.refresh(source)
-        return source
+    
+        # If insert was skipped due to conflict, fetch existing row
+        if obj is None:
+            obj = session.execute(
+                select(Source).where(Source.file_path == data["file_path"])
+            ).scalar_one_or_none()
+    
+        return obj
 
     # ------------------------------------------------------------------
     # Read

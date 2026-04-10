@@ -17,7 +17,7 @@ class Source(SQLModel, table=True):
     publisher_id: int | None = Field(default=None, foreign_key="publishers.id", index=True)
     title: str | None = Field(default=None)
     file_path: str | None = Field(default=None, index=True)
-
+    snippet_text: str | None = Field(default=None)
     search_subjects: dict | None = Field(default=None, sa_column=Column(JSON, nullable=True))
     search_intents: dict | None = Field(default=None, sa_column=Column(JSON, nullable=True))
     search_filetypes: dict | None = Field(default=None, sa_column=Column(JSON, nullable=True))
