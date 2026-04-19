@@ -12,9 +12,9 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import date
-
 import requests
 import trafilatura
+from config.fetcher import FetcherSettings
 
 logger = logging.getLogger(__name__)
 
@@ -101,28 +101,3 @@ class SerperClient:
             published_date=self._parse_date(item.get("date")),
             fetch_date=date.today(),
         )
-
-
-if __name__ == "__main__":
-    import os
-    from config.fetcher import FetcherSettings
-
-    cfg = FetcherSettings()
-    client = SerperClient(
-        api_key=cfg.serper_api_key,
-        max_results=cfg.serper_max_results,
-        period=cfg.serper_period,
-    )
-
-    ticker = "AAPL"
-    query = f'{ticker} stock "price target" (raises OR raised OR upgrade OR downgrade OR outlook)'
-
-    results = client.search(ticker, query)
-
-    for r in results:
-        print("TITLE:", r.title)
-        print("URL:  ", r.url)
-        print("DATE: ", r.published_date)
-        print("SNIPPET:", r.snippet)
-        #print("TEXT:", r.full_text)
-        print("-" * 50)

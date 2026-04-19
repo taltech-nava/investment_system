@@ -14,7 +14,6 @@ from src.models.source import Source
 from src.repositories.instrument_repository import instrument_repository
 from src.repositories.publisher_repository import publisher_repository
 from src.repositories.source_repository import source_repository
-#from src.services.fetcher.serper_client import RawResult, SerperClient
 from src.ingestion.serper_client import RawResult, SerperClient
 
 logger = logging.getLogger(__name__)
@@ -102,32 +101,3 @@ class FetchService:
             authors=raw.authors or [],
         )
         return publisher_repository.create(self._session, publisher)
-
-        
-if __name__ == "__main__":
-    import sys
-    from config.fetcher import FetcherSettings
-    from database.session import get_session
-    from src.ingestion.serper_client import RawResult,SerperClient
-
-    ticker = sys.argv[1].upper() if len(sys.argv) > 1 else "AAPL"
-
-    cfg = FetcherSettings()
-    serper = SerperClient(
-        api_key=cfg.serper_api_key,
-        max_results=cfg.serper_max_results,
-        period=cfg.serper_period,
-    )
-
-    session_gen = get_session()
-    session = next(session_gen)
-
-    try:
-        service = FetchService(session=session, serper_client=serper, query_template=cfg.query_template)
-        n = service.fetch_ticker(ticker)
-        print(f"Done — saved {n} records for {ticker}")
-    finally:
-        try:
-            next(session_gen)
-        except StopIteration:
-            pass

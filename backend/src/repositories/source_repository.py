@@ -68,19 +68,15 @@ class SourceRepository:
     # Update
     # ------------------------------------------------------------------
 
-    def update_status(
-        self,
-        session: Session,
-        source_id: int,
-        status: str,
-        reason: str | None = None,
-    ) -> None:
+    def update(self, session: Session, source_id: int, **kwargs) -> Source | None:
         source = session.get(Source, source_id)
         if source is None:
-            return
-        source.audit_status = status
-        source.rejection_reason = reason[:20] if reason else None
+            return None
+        for key, value in kwargs.items():
+            setattr(source, key, value)
         session.add(source)
+        session.commit()
+        return source
 
 
 source_repository = SourceRepository()

@@ -2,12 +2,10 @@ from fastapi import APIRouter
 from config.fetcher import FetcherSettings
 from database.session import get_session
 from src.ingestion.serper_client import SerperClient
-from src.ingestion.fetch_service import FetchService
+from src.services.fetch_service import FetchService
 from sqlmodel import select
 from src.models.source import Source
 from sqlalchemy import text
-import json
-
 
 router = APIRouter()
 
@@ -15,11 +13,7 @@ router = APIRouter()
 def fetch_ticker(ticker: str):
     cfg = FetcherSettings()
 
-    serper = SerperClient(
-        api_key=cfg.serper_api_key,
-        max_results=cfg.serper_max_results,
-        period=cfg.serper_period,
-    )
+    serper = SerperClient()
 
     session_gen = get_session()
     session = next(session_gen)
