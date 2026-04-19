@@ -6,7 +6,6 @@ from fastapi import FastAPI
 from database.engine import ping_db
 from routes import instrument_classes, instruments, system
 from routes.fetch import router as fetch_router
-from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 logging.basicConfig(
@@ -33,11 +32,4 @@ app.include_router(instruments.router, tags=["Instruments"])
 app.include_router(instrument_classes.router, tags=["Instrument Classes"])
 app.include_router(fetch_router)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # dev only
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
