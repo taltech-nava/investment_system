@@ -36,10 +36,11 @@ class RawResult:
 
 
 class SerperClient:
-    def __init__(self, api_key: str, max_results: int = 10, period: str = "qdr:m") -> None:
-        self._api_key = api_key
-        self._max_results = max_results
-        self._period = period
+    def __init__(self) -> None:
+        cfg = FetcherSettings()
+        self._api_key = cfg.serper_api_key
+        self._max_results = cfg.serper_max_results
+        self._period = cfg.serper_period
 
     def search(self, ticker: str, query: str) -> list[RawResult]:
         """Run one Serper query and return a list of RawResult objects."""
