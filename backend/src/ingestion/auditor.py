@@ -1,30 +1,31 @@
-import os
-import json
-import sys
-import shutil
 import asyncio
 import csv
+import json
+import os
+import shutil
+import sys
 from collections import Counter
+
 from pypdf import PdfReader
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'services'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "services"))
 from lm_broker import LMBroker
 
 # --- 1. CONFIGURATION ---
 AUDIT_CONFIG = {
-    #"provider": "runpod",
+    # "provider": "runpod",
     "provider": "openai",
     "pod_id": "ia08h1alk1knf7",
     "data_root": os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"),
-    "folder": "copper_outlook_2025-01-01",  # Target folder from search_and_fetch module 
-    #"folder": "backend/src/ingestion/data/raw/copper_outlook_2025-01-01",
-    "n_votes": 5,               # How many times to query the LLM per PDF for the majority vote trials
-    "batch_size": 5,            # How many requests sent to broker in one batch call; infrastructure
-    "temperature": 0.5,         # Variation in LLM, SLM responses, 0...1; must be > 0 for votes to diverge; 0 = identical responses every time, 1 = probably meaningless noise
-    "concurrency": 2,           # Max PDFs audited simultaneously, pipeline level
-    "pages_to_scan": 10,         # How many pages to read from each PDF, to get some coverage of the document, not only the first page 
-    "chars_per_page": 200,     # Max characters extracted per page; can not be large
-    "char_limit": 4000,         # Hard cap on total characters sent to LLM for safety net; subject to trialing
+    "folder": "copper_outlook_2025-01-01",  # Target folder from search_and_fetch module
+    # "folder": "backend/src/ingestion/data/raw/copper_outlook_2025-01-01",
+    "n_votes": 5,  # How many times to query the LLM per PDF for the majority vote trials
+    "batch_size": 5,  # How many requests sent to broker in one batch call; infrastructure
+    "temperature": 0.5,  # Variation in LLM, SLM responses, 0...1; must be > 0 for votes to diverge; 0 = identical responses every time, 1 = probably meaningless noise
+    "concurrency": 2,  # Max PDFs audited simultaneously, pipeline level
+    "pages_to_scan": 10,  # How many pages to read from each PDF, to get some coverage of the document, not only the first page
+    "chars_per_page": 200,  # Max characters extracted per page; can not be large
+    "char_limit": 4000,  # Hard cap on total characters sent to LLM for safety net; subject to trialing
 }
 
 # --- 2. THE AUDIT RUBRIC ---
@@ -47,10 +48,10 @@ RETURN JSON ONLY:
 
 
 class Auditor:
-    def __init__(self, raw_folder_name):
-        #self.raw_dir = os.path.join("data", "raw", raw_folder_name)
+    def __init__(self, raw_folder_name: str) -> None:
+        # self.raw_dir = os.path.join("data", "raw", raw_folder_name)
         self.raw_dir = os.path.join(AUDIT_CONFIG["data_root"], "raw", AUDIT_CONFIG["folder"])
-        #self.proc_dir = os.path.join("data", "processed", raw_folder_name)
+        # self.proc_dir = os.path.join("data", "processed", raw_folder_name)
         self.proc_dir = os.path.join(AUDIT_CONFIG["data_root"], "processed", AUDIT_CONFIG["folder"])
 
         # Setup output structure
@@ -60,13 +61,12 @@ class Auditor:
         os.makedirs(self.blocked_dir, exist_ok=True)
 
         self.broker = LMBroker(
-            provider=AUDIT_CONFIG["provider"],
-            config={"pod_id": AUDIT_CONFIG["pod_id"]}
+            provider=AUDIT_CONFIG["provider"], config={"pod_id": AUDIT_CONFIG["pod_id"]}
         )
         self.log_file = os.path.join(self.proc_dir, "audit_trail.csv")
 
     # --- LOCAL TRIAGE (fast pre-filter before any LLM calls) ---
-    def local_triage(self, filename):
+    def local_triage(self, filename: str) -> bool:
         """
         Lightweight pre-filter. Returns True if the file passes basic checks
         and should proceed to SLM or LLM audit. Returns False to block immediately.
@@ -80,7 +80,7 @@ class Auditor:
             print(f"      [Triage] BLOCKED — file not found: {filename}")
             return False
 
-        if os.path.getsize(filepath) < 1024:   # Suspiciously tiny PDF (<1KB)
+        if os.path.getsize(filepath) < 1024:  # Suspiciously tiny PDF (<1KB)
             print(f"      [Triage] BLOCKED — file too small: {filename}")
             return False
 
@@ -88,7 +88,7 @@ class Auditor:
         return True
 
     # --- PDF TEXT EXTRACTION ---
-    def get_pdf_text(self, filename):
+    def get_pdf_text(self, filename: str) -> str:
         """
         Extracts text from the first `pages_to_scan` pages,
         capping each page at `chars_per_page` for balanced coverage,
@@ -96,21 +96,21 @@ class Auditor:
         """
         try:
             reader = PdfReader(os.path.join(self.raw_dir, filename))
-            pages = reader.pages[:AUDIT_CONFIG["pages_to_scan"]]
+            pages = reader.pages[: AUDIT_CONFIG["pages_to_scan"]]
 
             chunks = []
             for page in pages:
                 page_text = page.extract_text() or ""
-                chunks.append(page_text[:AUDIT_CONFIG["chars_per_page"]])
+                chunks.append(page_text[: AUDIT_CONFIG["chars_per_page"]])
 
             combined = "\n".join(chunks)
-            return combined[:AUDIT_CONFIG["char_limit"]]
+            return combined[: AUDIT_CONFIG["char_limit"]]
 
         except Exception as e:
             return f"Error: {e}"
 
     # --- CORE AUDIT LOGIC (runs per file, respects semaphore) ---
-    async def process_file(self, file_meta, semaphore):
+    async def process_file(self, file_meta: dict, semaphore: asyncio.Semaphore) -> None:
         async with semaphore:
             report_id = file_meta["report_id"]
             filename = f"{report_id}.pdf"
@@ -134,9 +134,9 @@ class Auditor:
                 tasks,
                 system=SYSTEM_PROMPT,
                 batch_size=AUDIT_CONFIG["batch_size"],
-                temperature=AUDIT_CONFIG["temperature"]
+                temperature=AUDIT_CONFIG["temperature"],
             )
-            #print(f"[DEBUG] raw_votes: {raw_votes}")
+            # print(f"[DEBUG] raw_votes: {raw_votes}")
 
             # 4. Parse votes
             parsed_votes = []
@@ -145,7 +145,7 @@ class Auditor:
                     clean = v.replace("```json", "").replace("```", "").strip()
                     parsed_votes.append(json.loads(clean))
                 except Exception:
-                    continue   # Silently drop malformed responses
+                    continue  # Silently drop malformed responses
 
             if not parsed_votes:
                 self.log_result(report_id, 0, "blocked", "JSON Parse Failure — all votes malformed")
@@ -157,10 +157,7 @@ class Auditor:
             status = "final" if final_score >= 3 else "blocked"
 
             # Pick reasoning from a representative matching vote
-            rep = next(
-                (v for v in parsed_votes if v.get("score") == final_score),
-                parsed_votes[0]
-            )
+            rep = next((v for v in parsed_votes if v.get("score") == final_score), parsed_votes[0])
 
             # 6. Move file and log
             dest_dir = self.final_dir if status == "final" else self.blocked_dir
@@ -168,7 +165,7 @@ class Auditor:
             self.log_result(report_id, final_score, status, rep.get("reasoning", "n/a"))
 
     # --- CSV LOGGING ---
-    def log_result(self, report_id, score, status, reason):
+    def log_result(self, report_id: str, score: int, status: str, reason: str) -> None:
         write_header = not os.path.exists(self.log_file)
         with open(self.log_file, "a", newline="") as f:
             writer = csv.writer(f)
@@ -178,17 +175,13 @@ class Auditor:
         print(f"      -> {report_id}: {status.upper()} (Score: {score})")
 
     # --- ENTRY POINT ---
-    async def run(self):
+    async def run(self) -> None:
         manifest_path = os.path.join(self.raw_dir, "manifest.json")
-        with open(manifest_path, "r") as f:
+        with open(manifest_path) as f:
             manifest = json.load(f)
 
         sem = asyncio.Semaphore(AUDIT_CONFIG["concurrency"])
-        tasks = [
-            self.process_file(m, sem)
-            for m in manifest
-            if m.get("status") == "success"
-        ]
+        tasks = [self.process_file(m, sem) for m in manifest if m.get("status") == "success"]
         await asyncio.gather(*tasks)
 
 

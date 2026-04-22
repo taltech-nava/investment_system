@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 from datetime import date, timedelta
 
 import pandas as pd
 import yfinance as yf
+
+logger = logging.getLogger(__name__)
 
 
 class YFinanceService:
@@ -21,7 +24,7 @@ class YFinanceService:
         results: list[dict] = []
 
         for ticker in tickers:
-            print(f"   [Targets] {ticker}...", end="\r")
+            logger.info("Fetching analyst targets for %s", ticker)
             try:
                 df: pd.DataFrame = yf.Ticker(ticker).get_upgrades_downgrades()
                 if df is None or df.empty:
@@ -48,7 +51,7 @@ class YFinanceService:
                         }
                     )
             except Exception as e:
-                print(f"   ! [{ticker}] Error fetching analyst targets: {e}")
+                logger.warning("Error fetching analyst targets for %s: %s", ticker, e)
 
         return results
 
@@ -67,9 +70,9 @@ class YFinanceService:
                 end=target_date + timedelta(days=5),
             )
             if hist.empty:
-                print(f"   ! [{ticker}] No price data for {target_date}")
+                logger.warning("No price data for %s on %s", ticker, target_date)
                 return None
             return float(hist["Close"].iloc[0])
         except Exception as e:
-            print(f"   ! [{ticker}] Error fetching realised price: {e}")
+            logger.warning("Error fetching realised price for %s: %s", ticker, e)
             return None

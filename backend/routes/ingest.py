@@ -26,7 +26,9 @@ yfinance_service = YFinanceService()
 def ingest_yfinance(ticker: str, session: Session = Depends(get_session)) -> dict:
     instrument = instrument_repository.get_by_ticker(session, ticker)
     if not instrument:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instrument {ticker} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Instrument {ticker} not found"
+        )
 
     # Fetch and save analyst price targets
     targets = yfinance_service.fetch_analyst_targets([ticker])
@@ -41,7 +43,7 @@ def ingest_yfinance(ticker: str, session: Session = Depends(get_session)) -> dic
             prediction_date=t["grade_date"],
             maturation_date=t["maturation_date"],
             predicted_price=t["price_target"],
-            extracted_raw_price=t["price_target"],  # same value until field is made nullable
+            extracted_raw_price=None,
             currency=instrument.currency,
         )
         forecast_repository.save(session, forecast)
@@ -50,7 +52,9 @@ def ingest_yfinance(ticker: str, session: Session = Depends(get_session)) -> dic
     # Fetch and save realised closing price for today
     closing_price = yfinance_service.fetch_realised_price(ticker, date.today())
     saved_price = 0
-    if closing_price is not None and not price_repository.get_by_instrument_and_date(session, instrument.id, date.today()):
+    if closing_price is not None and not price_repository.get_by_instrument_and_date(
+        session, instrument.id, date.today()
+    ):
         price = Price(
             instrument_id=instrument.id,
             price_date=date.today(),
@@ -61,4 +65,5 @@ def ingest_yfinance(ticker: str, session: Session = Depends(get_session)) -> dic
         price_repository.save(session, price)
         saved_price = 1
 
+    session.commit()
     return {"ticker": ticker, "forecasts_saved": saved_forecasts, "prices_saved": saved_price}

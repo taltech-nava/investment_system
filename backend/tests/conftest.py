@@ -1,3 +1,11 @@
+import os
+
+# Must be set before any app imports trigger pydantic-settings validation
+os.environ.setdefault("POSTGRES_USER", "test")
+os.environ.setdefault("POSTGRES_PASSWORD", "test")
+os.environ.setdefault("POSTGRES_DB", "test")
+os.environ.setdefault("DB_HOST", "localhost")
+
 from collections.abc import Generator
 
 import pytest
@@ -7,8 +15,15 @@ from sqlmodel import Session, SQLModel, create_engine
 
 from database.session import get_session
 from main import app
+from src.models.forecast import Forecast  # noqa: F401
+from src.models.forecast_source import ForecastSource  # noqa: F401
 from src.models.instrument import Instrument
 from src.models.instrument_class import InstrumentClass
+from src.models.price import Price  # noqa: F401
+from src.models.publisher import Publisher  # noqa: F401
+from src.models.report import Report  # noqa: F401
+from src.models.source import Source  # noqa: F401
+from src.models.source_input import SourceInput  # noqa: F401
 
 engine = create_engine(
     "sqlite://",

@@ -23,7 +23,9 @@ class Forecast(SQLModel, table=True):
     maturation_date: date = Field(index=True)
     horizon_source: str | None = Field(default=None, max_length=10)
 
-    extracted_raw_price: Decimal = Field(sa_column=Column(Numeric(12, 4), nullable=False))
+    extracted_raw_price: Decimal | None = Field(
+        default=None, sa_column=Column(Numeric(12, 4), nullable=True)
+    )
     extracted_raw_price_run: int | None = Field(
         default=None, sa_column=Column(SmallInteger, nullable=True)
     )
