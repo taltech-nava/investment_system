@@ -14,7 +14,7 @@ from src.models.source import Source
 from src.repositories.instrument_repository import instrument_repository
 from src.repositories.publisher_repository import publisher_repository
 from src.repositories.source_repository import source_repository
-from src.ingestion.serper_client import RawResult, SerperClient
+from src.clients.serper_client import RawResult, SerperClient
 
 logger = logging.getLogger(__name__)
 
