@@ -18,27 +18,18 @@ class SourceRepository:
     # ------------------------------------------------------------------
 
     def create(self, session: Session, source: Source) -> Source:
-        data = source.model_dump(exclude={"id"})  # or source.dict() + pop("id")
-    
-        stmt = (
-            insert(Source)
-            .values(**data)
-            .on_conflict_do_nothing(index_elements=["file_path"])
-            .returning(Source)
-        )
-    
-        result = session.execute(stmt)
-        obj = result.scalar_one_or_none()
-    
-        session.commit()
-    
-        # If insert was skipped due to conflict, fetch existing row
-        if obj is None:
-            obj = session.execute(
-                select(Source).where(Source.file_path == data["file_path"])
+        # Check for existing row by file_path (duplicate guard)
+        if source.file_path:
+            existing = session.execute(
+                select(Source).where(Source.file_path == source.file_path)
             ).scalar_one_or_none()
-    
-        return obj
+            if existing:
+                return existing
+
+        session.add(source)
+        session.commit()
+        session.refresh(source)
+        return source
 
     # ------------------------------------------------------------------
     # Read
