@@ -15,7 +15,9 @@ from sqlmodel import Session, SQLModel, create_engine
 
 from database.session import get_session
 from main import app
+from src.models.aggregate_component import AggregateComponent  # noqa: F401
 from src.models.forecast import Forecast  # noqa: F401
+from src.models.forecast_aggregate import ForecastAggregate  # noqa: F401
 from src.models.forecast_source import ForecastSource  # noqa: F401
 from src.models.instrument import Instrument
 from src.models.instrument_class import InstrumentClass
@@ -63,3 +65,9 @@ def setup_db() -> Generator[None, None, None]:
 @pytest.fixture()
 def client(setup_db: None) -> TestClient:
     return TestClient(app)
+
+
+@pytest.fixture()
+def db_session(setup_db: None) -> Generator[Session, None, None]:
+    with Session(engine) as session:
+        yield session

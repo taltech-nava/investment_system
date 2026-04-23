@@ -22,7 +22,7 @@ class Forecast(SQLModel, table=True):
     __tablename__ = "forecasts"
     __table_args__ = (
         CheckConstraint(
-            "estimate_type IN ('source_point_estimate', 'llm_point_estimate', 'llm_scenario_estimate')",
+            "estimate_type IN ('source_point_estimate', 'llm_point_estimate', 'llm_scenario_estimate', 'manual_point_estimate', 'manual_scenario_estimate')",
             name="chk_forecast_estimate_type",
         ),
     )
@@ -43,7 +43,9 @@ class Forecast(SQLModel, table=True):
     )
     extraction_status: str | None = Field(default=None, max_length=25)
 
-    predicted_price: Decimal = Field(sa_column=Column(Numeric(12, 4), nullable=False))
+    predicted_price: Decimal | None = Field(
+        default=None, sa_column=Column(Numeric(12, 4), nullable=True)
+    )
     currency: str = Field(max_length=10)
 
     conviction: int | None = Field(default=None, sa_column=Column(SmallInteger, nullable=True))

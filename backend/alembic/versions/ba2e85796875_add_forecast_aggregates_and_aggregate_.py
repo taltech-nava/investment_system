@@ -57,7 +57,7 @@ def upgrade() -> None:
     op.create_check_constraint(
         "chk_forecast_estimate_type",
         "forecasts",
-        "estimate_type IN ('source_point_estimate', 'llm_point_estimate', 'llm_scenario_estimate')",
+        "estimate_type IN ('source_point_estimate', 'llm_point_estimate', 'llm_scenario_estimate', 'manual_point_estimate', 'manual_scenario_estimate')",
     )
 
 

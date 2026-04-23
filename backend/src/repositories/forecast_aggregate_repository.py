@@ -32,6 +32,7 @@ class ForecastAggregateRepository:
                         ["source_point_estimate", "llm_point_estimate", "llm_scenario_estimate"]
                     ),
                     Forecast.prediction_date >= since,
+                    Forecast.predicted_price.isnot(None),
                 )
             ).all()
         )

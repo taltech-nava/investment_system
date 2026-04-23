@@ -64,7 +64,8 @@ class PricePredictionService:
 
         # --- Point estimate ---
         point_forecasts = [
-            f for f in forecasts
+            f
+            for f in forecasts
             if f.estimate_type in ("source_point_estimate", "llm_point_estimate")
         ]
         if point_forecasts:
@@ -174,8 +175,8 @@ class PricePredictionService:
 
         groups = {
             "bear": sorted_forecasts[:third],
-            "base": sorted_forecasts[third: third * 2],
-            "bull": sorted_forecasts[third * 2:],
+            "base": sorted_forecasts[third : third * 2],
+            "bull": sorted_forecasts[third * 2 :],
         }
 
         results = []
