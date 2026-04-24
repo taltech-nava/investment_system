@@ -14,7 +14,7 @@ import type { Instrument, InstrumentClass } from '@/types/instruments';
 import type { ForecastOptions, ForecastRead } from '@/types/forecasts';
 import useNotify from '../hooks/useNotify';
 import DarkSlider from '../components/DarkSlider';
-import { formatLabel, formatTimestamp } from '@/lib/helpers';
+import { formatTimestamp } from '@/lib/helpers';
 import ScenarioPriceCard from './ScenarioPriceCard';
 
 interface NewEntryFormProps {
@@ -27,7 +27,6 @@ interface FormValues {
   instrument: Instrument | null;
   publisherName: string;
   classId: string;
-  estimateType: string;
   scenarioPrices: Record<string, string>;
   maturationDate: string;
   method: string;
@@ -37,6 +36,14 @@ interface FormValues {
 const DEFAULT_CONVICTION_SOURCE = 'manual';
 const DEFAULT_HORIZON_SOURCE = 'source_declared';
 const DEFAULT_ENTRY_MODE = 'manual';
+const POINT_ESTIMATE_TYPE = 'manual_point_estimate';
+const SCENARIO_ESTIMATE_TYPE = 'manual_scenario_estimate';
+
+function getDefaultMaturationDate(): string {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() + 1);
+  return date.toISOString().slice(0, 10);
+}
 
 export default function NewEntryForm({
   instrumentClasses,
@@ -60,11 +67,10 @@ export default function NewEntryForm({
       instrument: null,
       publisherName: '',
       classId: '',
-      estimateType: '',
       scenarioPrices: Object.fromEntries(
         forecastOptions.scenarios.map((scenario) => [scenario, '']),
       ),
-      maturationDate: '',
+      maturationDate: getDefaultMaturationDate(),
       method: '',
       conviction: 3,
     },
@@ -113,7 +119,7 @@ export default function NewEntryForm({
               horizon_source: DEFAULT_HORIZON_SOURCE,
               method: data.method || null,
               entry_mode: DEFAULT_ENTRY_MODE,
-              estimate_type: data.estimateType,
+              estimate_type: scenario === 'single' ? POINT_ESTIMATE_TYPE : SCENARIO_ESTIMATE_TYPE,
             }),
           }),
         ),
@@ -133,7 +139,6 @@ export default function NewEntryForm({
           instrument_id: 'instrument',
           conviction: 'conviction',
           method: 'method',
-          estimate_type: 'estimateType',
           publisher_name: 'publisherName',
         };
         let hasFieldErrors = false;
@@ -399,33 +404,6 @@ export default function NewEntryForm({
                 />
                 {errors.maturationDate && (
                   <p className="mt-0.5 text-xs text-red-400">{errors.maturationDate.message}</p>
-                )}
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-slate-300">Estimate type</label>
-                <Controller
-                  name="estimateType"
-                  control={control}
-                  rules={{ required: 'Estimate type is required' }}
-                  render={({ field }) => (
-                    <DarkSelect
-                      value={field.value}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      displayEmpty
-                    >
-                      <MenuItem value="">
-                        <span style={{ color: 'rgb(100 116 139)' }}>Select estimate type</span>
-                      </MenuItem>
-                      {forecastOptions.estimate_types.map((opt) => (
-                        <MenuItem key={opt} value={opt}>
-                          {formatLabel(opt)}
-                        </MenuItem>
-                      ))}
-                    </DarkSelect>
-                  )}
-                />
-                {errors.estimateType && (
-                  <p className="mt-0.5 text-xs text-red-400">{errors.estimateType.message}</p>
                 )}
               </div>
               <div className="flex flex-col gap-1.5">
