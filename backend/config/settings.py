@@ -1,4 +1,5 @@
 from .database import DatabaseSettings
+from .forecast_options import ForecastOptionsSettings
 
 
 class Settings:
@@ -14,6 +15,7 @@ class Settings:
 
     def __init__(self) -> None:
         self.database = DatabaseSettings()
+        self.forecast_options = ForecastOptionsSettings()
 
 
 settings = Settings()
