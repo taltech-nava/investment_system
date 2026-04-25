@@ -16,6 +16,7 @@ from src.models.instrument import Instrument
 from src.models.instrument_class import InstrumentClass
 from src.models.publisher import Publisher
 from src.repositories.forecast_repository import ForecastRepository
+from src.services.publisher_service import PublisherService
 
 
 @pytest.fixture
@@ -132,18 +133,16 @@ class TestGetByInstrument:
 
 
 class TestGetOrCreatePublisher:
-    def test_creates_new_publisher_when_not_found(
-        self, seeded_session: Session, repo: ForecastRepository
-    ) -> None:
-        publisher = repo.get_or_create_publisher(seeded_session, "Morgan Stanley")
+    def test_creates_new_publisher_when_not_found(self, seeded_session: Session) -> None:
+        service = PublisherService(seeded_session)
+        publisher = service.get_or_create("Morgan Stanley")
 
         assert publisher.id is not None
         assert publisher.institution == "Morgan Stanley"
 
-    def test_returns_existing_publisher(
-        self, seeded_session: Session, repo: ForecastRepository
-    ) -> None:
-        publisher1 = repo.get_or_create_publisher(seeded_session, "Goldman Sachs")
-        publisher2 = repo.get_or_create_publisher(seeded_session, "Goldman Sachs")
+    def test_returns_existing_publisher(self, seeded_session: Session) -> None:
+        service = PublisherService(seeded_session)
+        publisher1 = service.get_or_create("Goldman Sachs")
+        publisher2 = service.get_or_create("Goldman Sachs")
 
         assert publisher1.id == publisher2.id

@@ -8,13 +8,20 @@ if TYPE_CHECKING:
     from datetime import date
 
 from src.models.forecast import Forecast
-from src.models.publisher import Publisher
 
 
 class ForecastRepository:
     def save(self, session: Session, forecast: Forecast) -> Forecast:
+        """Add and flush within the caller's transaction."""
         session.add(forecast)
         session.flush()
+        return forecast
+
+    def create(self, session: Session, forecast: Forecast) -> Forecast:
+        """Add, commit, and refresh — used by ForecastService."""
+        session.add(forecast)
+        session.commit()
+        session.refresh(forecast)
         return forecast
 
     def exists(
@@ -39,16 +46,6 @@ class ForecastRepository:
                 .order_by(Forecast.prediction_date.desc())
             ).all()
         )
-
-    def get_or_create_publisher(self, session: Session, institution: str) -> Publisher:
-        publisher = session.exec(
-            select(Publisher).where(Publisher.institution == institution)
-        ).first()
-        if not publisher:
-            publisher = Publisher(institution=institution)
-            session.add(publisher)
-            session.flush()  # assigns publisher.id without committing the transaction
-        return publisher
 
 
 forecast_repository = ForecastRepository()

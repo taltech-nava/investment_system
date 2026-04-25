@@ -11,6 +11,7 @@ from src.models.price import Price
 from src.repositories.forecast_repository import forecast_repository
 from src.repositories.instrument_repository import instrument_repository
 from src.repositories.price_repository import price_repository
+from src.services.publisher_service import PublisherService
 from src.services.yfinance_service import YFinanceService
 
 router = APIRouter(prefix="/ingest")
@@ -32,9 +33,10 @@ def ingest_yfinance(ticker: str, session: Session = Depends(get_session)) -> dic
 
     # Fetch and save analyst price targets
     targets = yfinance_service.fetch_analyst_targets([ticker])
+    publisher_service = PublisherService(session)
     saved_forecasts = 0
     for t in targets:
-        publisher = forecast_repository.get_or_create_publisher(session, t["firm"])
+        publisher = publisher_service.get_or_create(t["firm"])
         if forecast_repository.exists(session, instrument.id, publisher.id, t["grade_date"]):
             continue
         forecast = Forecast(
