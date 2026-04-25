@@ -20,6 +20,9 @@ dependencies = [
     "psycopg[binary]>=3.3.3",
     "pydantic-settings>=2.13.1",
     "sqlmodel>=0.0.37",
+	"trafilatura>=1.12",
+	"python-dateutil>=2.9",
+	"requests>=2.32",
 ]
 
 [dependency-groups]

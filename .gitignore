@@ -22,3 +22,7 @@ backgrouund research/
 
 # IDE
 .idea/
+
+# IDE config
+.project
+.pydevproject
