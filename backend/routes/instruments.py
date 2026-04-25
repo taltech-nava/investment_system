@@ -7,12 +7,16 @@ router = APIRouter(prefix="/instruments")
 
 
 @router.get("/", response_model=list[Instrument], summary="List all instruments")
-def list_instruments(service: InstrumentService = Depends(get_instrument_service)) -> list[Instrument]:
+def list_instruments(
+    service: InstrumentService = Depends(get_instrument_service),
+) -> list[Instrument]:
     return service.list()
 
 
 @router.get("/{instrument_id}", response_model=Instrument, summary="Get an instrument by ID")
-def get_instrument(instrument_id: int, service: InstrumentService = Depends(get_instrument_service)) -> Instrument:
+def get_instrument(
+    instrument_id: int, service: InstrumentService = Depends(get_instrument_service)
+) -> Instrument:
     instrument = service.get(instrument_id)
     if not instrument:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instrument not found")

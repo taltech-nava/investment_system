@@ -1,7 +1,18 @@
-from fastapi import APIRouter, Depends, status
+from __future__ import annotations
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlmodel import Session  # noqa: TC002
 
 from config.settings import settings
-from src.models.forecast import ForecastCreate, ForecastOptionsRead, ForecastRead
+from database.session import get_session
+from src.models.forecast import (
+    Forecast,
+    ForecastCreate,
+    ForecastOptionsRead,
+    ForecastRead,
+)
+from src.repositories.forecast_repository import forecast_repository
+from src.repositories.instrument_repository import instrument_repository
 from src.services.forecast_service import ForecastService, get_forecast_service
 
 router = APIRouter(prefix="/forecasts")
@@ -30,3 +41,18 @@ def create_forecast(
     service: ForecastService = Depends(get_forecast_service),
 ) -> ForecastRead:
     return service.create(data)
+
+
+@router.get(
+    "/{ticker}",
+    status_code=status.HTTP_200_OK,
+    summary="Get stored forecasts for a ticker",
+)
+def get_forecasts(ticker: str, session: Session = Depends(get_session)) -> list[Forecast]:
+    instrument = instrument_repository.get_by_ticker(session, ticker)
+    if not instrument:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Instrument {ticker} not found"
+        )
+
+    return forecast_repository.get_by_instrument(session, instrument.id)

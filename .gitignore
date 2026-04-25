@@ -16,7 +16,13 @@ venv/
 # Pyright / type checker cache
 .pyright/
 
+# Local 
+backgrouund research/
+.python-version
+
+# IDE
+.idea/
+
 # IDE config
 .project
 .pydevproject
-

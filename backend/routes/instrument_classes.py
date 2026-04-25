@@ -23,5 +23,7 @@ def get_instrument_class(
 ) -> InstrumentClass:
     instrument_class = service.get(class_id)
     if not instrument_class:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instrument class not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Instrument class not found"
+        )
     return instrument_class

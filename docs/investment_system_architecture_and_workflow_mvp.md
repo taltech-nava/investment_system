@@ -31,6 +31,7 @@ Examines each file in the raw data folder. Assigns a quality rank (1–5) via LL
 - `accepted` — quality rank 3–5, available to the Extraction & Synthesis module
 - `rejected` — quality rank 1–2, retained for record but excluded from synthesis
 - `failed` — scraping failure, paywall, or download error; quality rank is NULL
+Current implementation assumes each source is audited once. Re-running the audit on the same file corpus, changing the audit model, or manually moving files between folders may produce inconsistent state between the filesystem and the database. Resolving this requires either audit history tracking or making the database status the single source of truth. Deferred to post-MVP.
 
 The audit runs the same procedure on every report regardless of what the user expects. This is not a convenience — manual curation reintroduces the selective attention and post-hoc rationalization the system is designed to eliminate.
 
