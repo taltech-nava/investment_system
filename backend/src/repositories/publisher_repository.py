@@ -1,15 +1,15 @@
-#publisher_repository.py backend/src/repositories/
-
-#New file. create() and get_by_url() used when saving each search result
-
 from __future__ import annotations
-
-from sqlmodel import Session, select
-
+from sqlmodel import select
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from sqlmodel import Session
 from src.models.publisher import Publisher
 
 
 class PublisherRepository:
+    def get_by_institution(self, session: Session, institution: str) -> Publisher | None:
+        return session.exec(select(Publisher).where(Publisher.institution == institution)).first()
+
     def create(self, session: Session, publisher: Publisher) -> Publisher:
         session.add(publisher)
         session.commit()
@@ -24,6 +24,5 @@ class PublisherRepository:
 
     def list(self, session: Session) -> list[Publisher]:
         return list(session.exec(select(Publisher)).all())
-
 
 publisher_repository = PublisherRepository()

@@ -4,9 +4,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from database.engine import ping_db
-from routes import instrument_classes, instruments, system
 from routes.fetch import router as fetch_router
 import logging
+from exceptions import register_exception_handlers
+from routes import forecasts, instrument_classes, instruments, system
 
 logging.basicConfig(
     level=logging.INFO,
@@ -27,9 +28,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+register_exception_handlers(app)
+
 app.include_router(system.router, tags=["System"])
 app.include_router(instruments.router, tags=["Instruments"])
 app.include_router(instrument_classes.router, tags=["Instrument Classes"])
 app.include_router(fetch_router)
-
-
+app.include_router(forecasts.router, tags=["Forecasts"])
