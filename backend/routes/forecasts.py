@@ -70,7 +70,6 @@ def get_forecasts(ticker: str, session: Session = Depends(get_session)) -> list[
             prediction_date=t["grade_date"],
             maturation_date=t["maturation_date"],
             predicted_price=t["price_target"],
-            extracted_raw_price=t["price_target"],  # same value until field is made nullable
             currency=instrument.currency,
         )
 
