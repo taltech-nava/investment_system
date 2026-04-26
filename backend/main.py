@@ -4,10 +4,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from database.engine import ping_db
-from routes.fetch import router as fetch_router
 import logging
 from exceptions import register_exception_handlers
-from routes import forecasts, instrument_classes, instruments, system
+from routes import publishers, forecasts, fetch, instrument_classes, instruments, system
 
 logging.basicConfig(
     level=logging.INFO,
@@ -33,5 +32,6 @@ register_exception_handlers(app)
 app.include_router(system.router, tags=["System"])
 app.include_router(instruments.router, tags=["Instruments"])
 app.include_router(instrument_classes.router, tags=["Instrument Classes"])
-app.include_router(fetch_router)
+app.include_router(fetch.router, tags=["Fetch"])
 app.include_router(forecasts.router, tags=["Forecasts"])
+app.include_router(publishers.router, tags=["Publishers"])

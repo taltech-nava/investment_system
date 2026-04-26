@@ -17,7 +17,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <Header onMenuClick={() => setSidebarOpen(true)} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main className="mx-auto max-w-200 flex-1 overflow-y-auto p-4 pb-6 sm:p-8 md:p-12 md:pb-8">
+        <main className="flex-1 overflow-y-auto p-4 pb-6 sm:p-8 md:p-12 md:pb-8">
           <div>{children}</div>
         </main>
       </div>

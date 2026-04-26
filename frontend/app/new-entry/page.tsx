@@ -11,10 +11,12 @@ export default async function NewEntryPage() {
   ]);
 
   return (
-    <NewEntryForm
-      instrumentClasses={instrumentClasses}
-      instruments={instruments}
-      forecastOptions={forecastOptions}
-    />
+    <div className="mx-auto max-w-200 flex-1 overflow-y-auto p-4 pb-6 sm:p-8 md:p-12 md:pb-8">
+      <NewEntryForm
+        instrumentClasses={instrumentClasses}
+        instruments={instruments}
+        forecastOptions={forecastOptions}
+      />
+    </div>
   );
 }
