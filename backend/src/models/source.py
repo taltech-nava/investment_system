@@ -1,7 +1,7 @@
 from datetime import date
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import JSON, Column
+from sqlalchemy import JSON, Column, Text
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ class Source(SQLModel, table=True):
     publisher_id: int | None = Field(default=None, foreign_key="publishers.id", index=True)
     title: str | None = Field(default=None)
     file_path: str | None = Field(default=None, index=True)
-    snippet_text: str | None = Field(default=None)
+    snippet_text: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
     search_subjects: dict | None = Field(default=None, sa_column=Column(JSON, nullable=True))
     search_intents: dict | None = Field(default=None, sa_column=Column(JSON, nullable=True))
     search_filetypes: dict | None = Field(default=None, sa_column=Column(JSON, nullable=True))
