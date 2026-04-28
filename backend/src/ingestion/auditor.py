@@ -1,20 +1,19 @@
 import asyncio
 import csv
 import json
+import logging
 import os
 import shutil
-import sys
 from collections import Counter
 
 from pypdf import PdfReader
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "services"))
-from lm_broker import LMBroker
+from src.services.lm_broker import broker_for
+
+logger = logging.getLogger(__name__)
 
 # --- 1. CONFIGURATION ---
 AUDIT_CONFIG = {
-    # "provider": "runpod",
-    "provider": "openai",
     "pod_id": "ia08h1alk1knf7",
     "data_root": os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"),
     "folder": "copper_outlook_2025-01-01",  # Target folder from search_and_fetch module
@@ -60,9 +59,7 @@ class Auditor:
         os.makedirs(self.final_dir, exist_ok=True)
         os.makedirs(self.blocked_dir, exist_ok=True)
 
-        self.broker = LMBroker(
-            provider=AUDIT_CONFIG["provider"], config={"pod_id": AUDIT_CONFIG["pod_id"]}
-        )
+        self.broker = broker_for("audit")
         self.log_file = os.path.join(self.proc_dir, "audit_trail.csv")
 
     # --- LOCAL TRIAGE (fast pre-filter before any LLM calls) ---
@@ -77,11 +74,11 @@ class Auditor:
 
         # Example checks (add more as your pipeline matures):
         if not os.path.exists(filepath):
-            print(f"      [Triage] BLOCKED — file not found: {filename}")
+            logger.warning("triage blocked — file not found: %s", filename)
             return False
 
         if os.path.getsize(filepath) < 1024:  # Suspiciously tiny PDF (<1KB)
-            print(f"      [Triage] BLOCKED — file too small: {filename}")
+            logger.warning("triage blocked — file too small: %s", filename)
             return False
 
         # Placeholder for future heuristics (e.g. regex on filename, checksum, etc.)
@@ -114,7 +111,7 @@ class Auditor:
         async with semaphore:
             report_id = file_meta["report_id"]
             filename = f"{report_id}.pdf"
-            print(f"   [Audit Start] {report_id}...")
+            logger.info("audit start: %s", report_id)
 
             # 1. Local Triage — fast, cheap pre-filter
             if not self.local_triage(filename):
@@ -135,8 +132,8 @@ class Auditor:
                 system=SYSTEM_PROMPT,
                 batch_size=AUDIT_CONFIG["batch_size"],
                 temperature=AUDIT_CONFIG["temperature"],
+                calling_module="auditor",
             )
-            # print(f"[DEBUG] raw_votes: {raw_votes}")
 
             # 4. Parse votes
             parsed_votes = []
@@ -172,7 +169,7 @@ class Auditor:
             if write_header:
                 writer.writerow(["report_id", "score", "status", "reasoning"])
             writer.writerow([report_id, score, status, reason])
-        print(f"      -> {report_id}: {status.upper()} (Score: {score})")
+        logger.info("audit result: %s status=%s score=%d", report_id, status.upper(), score)
 
     # --- ENTRY POINT ---
     async def run(self) -> None:
