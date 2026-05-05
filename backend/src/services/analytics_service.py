@@ -31,6 +31,30 @@ class DistributionResult(BaseModel):
     p_value: float | None
 
 
+class ReportRowResult(BaseModel):
+    report_id: int
+    forecast_id: int
+    review_date: str
+    prediction_date: str
+    ticker: str
+    instrument_name: str
+    publisher_id: int
+    publisher_name: str | None
+    forecast_price: float
+    realised_price: float
+    error_ratio: float
+    error_percent: float
+    direction_correct: bool | None
+    method: str | None
+
+
+class ReportsPageResult(BaseModel):
+    items: list[ReportRowResult]
+    page: int
+    page_size: int
+    total: int
+
+
 def _bin(errors: list[float]) -> list[int]:
     counts = [0] * len(_CUTOFFS)
     for e in errors:
@@ -74,6 +98,56 @@ class AnalyticsService:
             mean_selected=mean_selected,
             significant=significant,
             p_value=p_value,
+        )
+
+    def get_reports(
+        self,
+        session: Session,
+        *,
+        ticker: str | None,
+        publisher_id: int | None,
+        page: int,
+        page_size: int,
+    ) -> ReportsPageResult:
+        offset = (page - 1) * page_size
+        rows = analytics_repository.get_report_rows(
+            session,
+            ticker=ticker,
+            publisher_id=publisher_id,
+            offset=offset,
+            limit=page_size,
+        )
+        total = analytics_repository.get_report_rows_count(
+            session,
+            ticker=ticker,
+            publisher_id=publisher_id,
+        )
+
+        items = [
+            ReportRowResult(
+                report_id=report.id,
+                forecast_id=forecast.id,
+                review_date=report.review_date.isoformat(),
+                prediction_date=forecast.prediction_date.isoformat(),
+                ticker=instrument.ticker,
+                instrument_name=instrument.name,
+                publisher_id=publisher.id,
+                publisher_name=publisher.institution,
+                forecast_price=float(forecast.predicted_price),
+                realised_price=float(report.actual_price),
+                error_ratio=float(report.price_return_error),
+                error_percent=round(float(report.price_return_error) * 100, 2),
+                direction_correct=report.direction_correct,
+                method=forecast.entry_mode,
+            )
+            for report, forecast, instrument, publisher in rows
+        ]
+
+        return ReportsPageResult(
+            items=items,
+            page=page,
+            page_size=page_size,
+            total=total,
         )
 
 

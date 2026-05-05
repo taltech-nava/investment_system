@@ -1,7 +1,20 @@
-export default function AnalyticsPage() {
+import { apiFetch } from '@/lib/api';
+import type { Instrument, InstrumentClass } from '@/types/instruments';
+import type { Publisher } from '@/types/publishers';
+import AnalyticsFilters from './AnalyticsFilters';
+
+export default async function AnalyticsPage() {
+  const [instrumentClasses, instruments, publishers] = await Promise.all([
+    apiFetch<InstrumentClass[]>('/instrument-classes'),
+    apiFetch<Instrument[]>('/instruments'),
+    apiFetch<Publisher[]>('/publishers'),
+  ]);
+
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-slate-800 mb-1">Analytics</h1>
-    </div>
+    <AnalyticsFilters
+      instrumentClasses={instrumentClasses}
+      instruments={instruments}
+      publishers={publishers}
+    />
   );
 }

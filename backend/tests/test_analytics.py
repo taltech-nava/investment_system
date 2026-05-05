@@ -353,3 +353,24 @@ class TestAnalyticsRoute:
         data = client.get("/analytics/distribution").json()
         assert data["all"] == [0] * 20
         assert data["selected"] == [0] * 20
+
+    def test_reports_endpoint_returns_page_payload(self, client: object) -> None:
+        response = client.get("/analytics/reports")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["items"] == []
+        assert data["page"] == 1
+        assert data["page_size"] == 10
+        assert data["total"] == 0
+
+    def test_reports_endpoint_rejects_both_filters(self, client: object) -> None:
+        response = client.get("/analytics/reports?ticker=AAPL&publisher_id=1")
+        assert response.status_code == 422
+
+    def test_reports_endpoint_rejects_invalid_page(self, client: object) -> None:
+        response = client.get("/analytics/reports?page=0")
+        assert response.status_code == 422
+
+    def test_reports_endpoint_rejects_invalid_page_size(self, client: object) -> None:
+        response = client.get("/analytics/reports?page_size=101")
+        assert response.status_code == 422

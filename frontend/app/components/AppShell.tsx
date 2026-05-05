@@ -7,17 +7,21 @@ import Footer from './Footer';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import useNotify from '../hooks/useNotify';
+import { usePathname } from 'next/navigation';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { snackbar, notify } = useNotify();
+  const pathname = usePathname();
 
   return (
     <div className="flex h-screen flex-col">
       <Header onMenuClick={() => setSidebarOpen(true)} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main className="mx-auto max-w-200 flex-1 overflow-y-auto p-4 pb-6 sm:p-8 md:p-12 md:pb-8">
+        <main
+          className={`mx-auto ${pathname !== '/analytics' ? 'max-w-200' : ''} flex-1 overflow-y-auto p-4 pb-6 sm:p-8 md:p-12 md:pb-8`}
+        >
           <div>{children}</div>
         </main>
       </div>
