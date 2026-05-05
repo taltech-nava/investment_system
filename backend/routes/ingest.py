@@ -31,6 +31,9 @@ def ingest_yfinance(ticker: str, session: Session = Depends(get_session)) -> dic
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Instrument {ticker} not found"
         )
 
+    # Fetch and save realised closing price for today (also used as spot baseline for new forecasts)
+    closing_price = yfinance_service.fetch_realised_price(ticker, date.today())
+
     # Fetch and save analyst price targets
     targets = yfinance_service.fetch_analyst_targets([ticker])
     publisher_service = PublisherService(session)
@@ -47,12 +50,11 @@ def ingest_yfinance(ticker: str, session: Session = Depends(get_session)) -> dic
             predicted_price=t["price_target"],
             extracted_raw_price=None,
             currency=instrument.currency,
+            spot_price_at_prediction=closing_price,
         )
         forecast_repository.save(session, forecast)
         saved_forecasts += 1
 
-    # Fetch and save realised closing price for today
-    closing_price = yfinance_service.fetch_realised_price(ticker, date.today())
     saved_price = 0
     if closing_price is not None and not price_repository.get_by_instrument_and_date(
         session, instrument.id, date.today()

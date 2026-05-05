@@ -131,7 +131,9 @@ class TestAskAnthropic:
     def test_returns_response_content(self) -> None:
         broker = _make_broker(provider="anthropic", model="claude-haiku-4-5-20251001")
         broker._anthropic_client = MagicMock()
-        broker._anthropic_client.messages.create.return_value = _mock_anthropic_completion("claude reply")
+        broker._anthropic_client.messages.create.return_value = _mock_anthropic_completion(
+            "claude reply"
+        )
 
         result = broker.ask("system", "user", calling_module="test")
 
@@ -214,9 +216,7 @@ class TestLogging:
         with caplog.at_level(logging.ERROR, logger="src.services.lm_broker"):
             broker.ask("system", "user", calling_module="test_module")
 
-        assert any(
-            "llm_call" in r.message and r.levelname == "ERROR" for r in caplog.records
-        )
+        assert any("llm_call" in r.message and r.levelname == "ERROR" for r in caplog.records)
 
     def test_anthropic_call_also_logs(self, caplog: pytest.LogCaptureFixture) -> None:
         import logging
@@ -253,7 +253,9 @@ class TestAskBatch:
     async def test_anthropic_batch_returns_results(self) -> None:
         broker = _make_broker(provider="anthropic", model="claude-haiku-4-5-20251001")
         broker._anthropic_async_client = AsyncMock()
-        broker._anthropic_async_client.messages.create.return_value = _mock_anthropic_completion("ok")
+        broker._anthropic_async_client.messages.create.return_value = _mock_anthropic_completion(
+            "ok"
+        )
 
         results = await broker.ask_batch(["q1", "q2"], calling_module="test")
 

@@ -1,13 +1,14 @@
 from fastapi import APIRouter
+from sqlmodel import select
+
 from config.fetcher import FetcherSettings
 from database.session import get_session
 from src.clients.serper_client import SerperClient
-from src.services.fetch_service import FetchService
-from sqlmodel import select
 from src.models.source import Source
-from sqlalchemy import text
+from src.services.fetch_service import FetchService
 
 router = APIRouter()
+
 
 @router.get("/fetch/{ticker}")
 def fetch_ticker(ticker: str):
@@ -20,9 +21,7 @@ def fetch_ticker(ticker: str):
 
     try:
         service = FetchService(
-            session=session,
-            serper_client=serper,
-            query_template=cfg.query_template
+            session=session, serper_client=serper, query_template=cfg.query_template
         )
 
         n = service.fetch_ticker(ticker.upper())
@@ -34,8 +33,8 @@ def fetch_ticker(ticker: str):
             next(session_gen)
         except StopIteration:
             pass
-        
-        
+
+
 @router.get("/sources")
 def get_sources():
     session_gen = get_session()

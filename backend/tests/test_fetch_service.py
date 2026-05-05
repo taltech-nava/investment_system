@@ -3,15 +3,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from sqlalchemy.pool import StaticPool
-from sqlmodel import Session, SQLModel, create_engine
-from sqlmodel import select
+from sqlmodel import Session, SQLModel, create_engine, select
 
+from src.clients.serper_client import SerperClient
 from src.models.instrument import Instrument
 from src.models.instrument_class import InstrumentClass
-from src.models.publisher import Publisher
 from src.models.source import Source
 from src.services.fetch_service import FetchService
-from src.clients.serper_client import SerperClient
 
 engine = create_engine(
     "sqlite://",

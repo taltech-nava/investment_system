@@ -117,7 +117,9 @@ class TestBrokerFor:
 
         mock_llm = MagicMock()
         mock_llm.provider_for.side_effect = lambda t: {"audit": "openai", "extraction": "openai"}[t]
-        mock_llm.model_for.side_effect = lambda t: {"audit": "gpt-4o-mini", "extraction": "gpt-4o"}[t]
+        mock_llm.model_for.side_effect = lambda t: {"audit": "gpt-4o-mini", "extraction": "gpt-4o"}[
+            t
+        ]
         mock_llm.openai_api_key = "test-key"
 
         with patch("src.services.lm_broker.settings") as mock_settings:

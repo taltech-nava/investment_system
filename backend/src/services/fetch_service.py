@@ -1,6 +1,6 @@
-#fetch_service.py backend/src/services/fetcher/
+# fetch_service.py backend/src/services/fetcher/
 
-#Loops over all NASDAQ100 instruments, calls Serper, saves results to DB
+# Loops over all NASDAQ100 instruments, calls Serper, saves results to DB
 
 from __future__ import annotations
 
@@ -8,13 +8,13 @@ import logging
 
 from sqlmodel import Session
 
+from src.clients.serper_client import RawResult, SerperClient
 from src.models.instrument import Instrument
 from src.models.publisher import Publisher
 from src.models.source import Source
 from src.repositories.instrument_repository import instrument_repository
 from src.repositories.publisher_repository import publisher_repository
 from src.repositories.source_repository import source_repository
-from src.clients.serper_client import RawResult, SerperClient
 
 logger = logging.getLogger(__name__)
 
@@ -72,20 +72,21 @@ class FetchService:
         publisher = self._get_or_create_publisher(raw)
 
         # map RawResult → Source (without full_text)
-        source = Source(publisher_id=publisher.id,
-                        title=raw.title,
-                        file_path=raw.url,
-                        #content=raw.full_text,
-						snippet_text=raw.snippet,
-                        search_subjects=[instrument.ticker],
-                        search_query_full=raw.query,
-                        search_engine="serper",
-                        horizon_context="convention_assigned",
-                        mode="serper",
-                        fetch_date=raw.fetch_date,
-                        audit_status=None,
+        source = Source(
+            publisher_id=publisher.id,
+            title=raw.title,
+            file_path=raw.url,
+            # content=raw.full_text,
+            snippet_text=raw.snippet,
+            search_subjects=[instrument.ticker],
+            search_query_full=raw.query,
+            search_engine="serper",
+            horizon_context="convention_assigned",
+            mode="serper",
+            fetch_date=raw.fetch_date,
+            audit_status=None,
         )
-        
+
         return source_repository.create(self._session, source)
 
     def _get_or_create_publisher(self, raw: RawResult) -> Publisher:

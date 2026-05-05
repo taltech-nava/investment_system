@@ -1,12 +1,13 @@
-#fetcher.py backend/config/
+# fetcher.py backend/config/
 
-#Loads SERPER_API_KEY, max results, period, and query template from .env
+# Loads SERPER_API_KEY, max results, period, and query template from .env
 
 """Fetcher configuration loaded from .env via pydantic-settings.
 
 Add to your .env:
     SERPER_API_KEY=your_key
 """
+
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -26,4 +27,6 @@ class FetcherSettings(BaseSettings):
     serper_period: str = "qdr:m"
 
     # Query template. {ticker} is substituted at runtime.
-    query_template: str = '{ticker} stock "price target" (raises OR raised OR upgrade OR downgrade OR outlook)'
+    query_template: str = (
+        '{ticker} stock "price target" (raises OR raised OR upgrade OR downgrade OR outlook)'
+    )

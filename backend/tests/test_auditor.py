@@ -6,16 +6,20 @@ import json
 import os
 import tempfile
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
+if TYPE_CHECKING:
+    from src.ingestion.auditor import Auditor
 
 os.environ.setdefault("OPENAI_API_KEY", "test-key")
 os.environ.setdefault("LLM_PROVIDER", "openai")
 os.environ.setdefault("LLM_MODEL", "gpt-4o-mini")
 
 
-def _make_auditor(raw_dir: str, proc_dir: str) -> "Auditor":
+def _make_auditor(raw_dir: str, proc_dir: str) -> Auditor:
     from src.ingestion.auditor import Auditor
 
     auditor = Auditor.__new__(Auditor)
@@ -140,9 +144,7 @@ class TestProcessFile:
         raw, proc = tmp_dirs
         auditor = _make_auditor(raw, proc)
 
-        asyncio.run(
-            auditor.process_file(self._make_file_meta("MISSING-001"), asyncio.Semaphore(1))
-        )
+        asyncio.run(auditor.process_file(self._make_file_meta("MISSING-001"), asyncio.Semaphore(1)))
 
         with open(auditor.log_file) as f:
             rows = list(csv.reader(f))
@@ -154,9 +156,7 @@ class TestProcessFile:
         Path(os.path.join(raw, "BAD-001.pdf")).write_bytes(b"x" * 2048)
 
         with patch.object(auditor, "get_pdf_text", return_value="Error: corrupt"):
-            asyncio.run(
-                auditor.process_file(self._make_file_meta("BAD-001"), asyncio.Semaphore(1))
-            )
+            asyncio.run(auditor.process_file(self._make_file_meta("BAD-001"), asyncio.Semaphore(1)))
 
         with open(auditor.log_file) as f:
             rows = list(csv.reader(f))
@@ -167,13 +167,13 @@ class TestProcessFile:
         auditor = _make_auditor(raw, proc)
         Path(os.path.join(raw, "RPT-001.pdf")).write_bytes(b"x" * 2048)
 
-        good_vote = json.dumps({"is_report": True, "score": 4, "reasoning": "solid", "type": "research"})
+        good_vote = json.dumps(
+            {"is_report": True, "score": 4, "reasoning": "solid", "type": "research"}
+        )
         auditor.broker.ask_batch = AsyncMock(return_value=[good_vote] * 5)
 
         with patch.object(auditor, "get_pdf_text", return_value="some text"):
-            asyncio.run(
-                auditor.process_file(self._make_file_meta("RPT-001"), asyncio.Semaphore(1))
-            )
+            asyncio.run(auditor.process_file(self._make_file_meta("RPT-001"), asyncio.Semaphore(1)))
 
         assert os.path.exists(os.path.join(proc, "final", "RPT-001.pdf"))
 
@@ -200,9 +200,7 @@ class TestProcessFile:
         auditor.broker.ask_batch = AsyncMock(return_value=["not json"] * 5)
 
         with patch.object(auditor, "get_pdf_text", return_value="some text"):
-            asyncio.run(
-                auditor.process_file(self._make_file_meta("RPT-002"), asyncio.Semaphore(1))
-            )
+            asyncio.run(auditor.process_file(self._make_file_meta("RPT-002"), asyncio.Semaphore(1)))
 
         with open(auditor.log_file) as f:
             rows = list(csv.reader(f))
@@ -213,16 +211,15 @@ class TestProcessFile:
         auditor = _make_auditor(raw, proc)
         Path(os.path.join(raw, "RPT-003.pdf")).write_bytes(b"x" * 2048)
 
-        votes = (
-            [json.dumps({"score": 2, "reasoning": "low", "is_report": False, "type": "news"})] * 3
-            + [json.dumps({"score": 4, "reasoning": "good", "is_report": True, "type": "research"})] * 2
-        )
+        votes = [
+            json.dumps({"score": 2, "reasoning": "low", "is_report": False, "type": "news"})
+        ] * 3 + [
+            json.dumps({"score": 4, "reasoning": "good", "is_report": True, "type": "research"})
+        ] * 2
         auditor.broker.ask_batch = AsyncMock(return_value=votes)
 
         with patch.object(auditor, "get_pdf_text", return_value="some text"):
-            asyncio.run(
-                auditor.process_file(self._make_file_meta("RPT-003"), asyncio.Semaphore(1))
-            )
+            asyncio.run(auditor.process_file(self._make_file_meta("RPT-003"), asyncio.Semaphore(1)))
 
         assert os.path.exists(os.path.join(proc, "blocked", "RPT-003.pdf"))
 
@@ -231,13 +228,13 @@ class TestProcessFile:
         auditor = _make_auditor(raw, proc)
         Path(os.path.join(raw, "RPT-004.pdf")).write_bytes(b"x" * 2048)
 
-        good_vote = json.dumps({"score": 4, "reasoning": "ok", "is_report": True, "type": "research"})
+        good_vote = json.dumps(
+            {"score": 4, "reasoning": "ok", "is_report": True, "type": "research"}
+        )
         auditor.broker.ask_batch = AsyncMock(return_value=[good_vote] * 5)
 
         with patch.object(auditor, "get_pdf_text", return_value="text"):
-            asyncio.run(
-                auditor.process_file(self._make_file_meta("RPT-004"), asyncio.Semaphore(1))
-            )
+            asyncio.run(auditor.process_file(self._make_file_meta("RPT-004"), asyncio.Semaphore(1)))
 
         call_kwargs = auditor.broker.ask_batch.call_args[1]
         assert call_kwargs.get("calling_module") == "auditor"

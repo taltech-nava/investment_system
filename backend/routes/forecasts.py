@@ -15,7 +15,6 @@ from src.repositories.forecast_repository import forecast_repository
 from src.repositories.instrument_repository import instrument_repository
 from src.services.forecast_service import ForecastService, get_forecast_service
 from src.services.price_prediction_service import price_prediction_service
-from src.services.yfinance_service import YFinanceService
 
 router = APIRouter(prefix="/forecasts")
 
@@ -57,23 +56,8 @@ def get_forecasts(ticker: str, session: Session = Depends(get_session)) -> list[
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Instrument {ticker} not found"
         )
 
-    # Fetch and save analyst price targets
-    targets = yfinance_service.fetch_analyst_targets([ticker])
-    saved_forecasts = 0
-    for t in targets:
-        publisher = forecast_repository.get_or_create_publisher(session, t["firm"])
-        if forecast_repository.exists(session, instrument.id, publisher.id, t["grade_date"]):
-            continue
-        forecast = Forecast(
-            instrument_id=instrument.id,
-            publisher_id=publisher.id,
-            prediction_date=t["grade_date"],
-            maturation_date=t["maturation_date"],
-            predicted_price=t["price_target"],
-            currency=instrument.currency,
-        )
+    return forecast_repository.get_by_instrument(session, instrument.id)
 
-    return {"ticker": ticker, "forecasts_saved": saved_forecasts}
 
 @router.post(
     "/predict/{ticker}",

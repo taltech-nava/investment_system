@@ -1,6 +1,9 @@
 from __future__ import annotations
-from sqlmodel import select
+
 from typing import TYPE_CHECKING
+
+from sqlmodel import select
+
 if TYPE_CHECKING:
     from sqlmodel import Session
 from src.models.publisher import Publisher
@@ -24,5 +27,6 @@ class PublisherRepository:
 
     def list(self, session: Session) -> list[Publisher]:
         return list(session.exec(select(Publisher)).all())
+
 
 publisher_repository = PublisherRepository()

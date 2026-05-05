@@ -5,6 +5,7 @@ Revises: 398163f7cb65
 Create Date: 2026-04-08 13:42:05.010958
 
 """
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -12,8 +13,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = 'ba2e85796875'
-down_revision: str | Sequence[str] | None = 'd49c6f591ba3'
+revision: str = "ba2e85796875"
+down_revision: str | Sequence[str] | None = "d49c6f591ba3"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -37,10 +38,18 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["instrument_id"], ["instruments.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_forecast_aggregates_instrument_id", "forecast_aggregates", ["instrument_id"])
-    op.create_index("ix_forecast_aggregates_prediction_date", "forecast_aggregates", ["prediction_date"])
-    op.create_index("ix_forecast_aggregates_maturation_date", "forecast_aggregates", ["maturation_date"])
-    op.create_index("ix_forecast_aggregates_calculated_at", "forecast_aggregates", ["calculated_at"])
+    op.create_index(
+        "ix_forecast_aggregates_instrument_id", "forecast_aggregates", ["instrument_id"]
+    )
+    op.create_index(
+        "ix_forecast_aggregates_prediction_date", "forecast_aggregates", ["prediction_date"]
+    )
+    op.create_index(
+        "ix_forecast_aggregates_maturation_date", "forecast_aggregates", ["maturation_date"]
+    )
+    op.create_index(
+        "ix_forecast_aggregates_calculated_at", "forecast_aggregates", ["calculated_at"]
+    )
 
     op.create_table(
         "aggregate_components",
@@ -51,7 +60,9 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["forecast_id"], ["forecasts.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_aggregate_components_aggregate_id", "aggregate_components", ["aggregate_id"])
+    op.create_index(
+        "ix_aggregate_components_aggregate_id", "aggregate_components", ["aggregate_id"]
+    )
     op.create_index("ix_aggregate_components_forecast_id", "aggregate_components", ["forecast_id"])
 
     op.create_check_constraint(

@@ -48,6 +48,10 @@ class Forecast(SQLModel, table=True):
     )
     currency: str = Field(max_length=10)
 
+    spot_price_at_prediction: Decimal | None = Field(
+        default=None, sa_column=Column(Numeric(12, 4), nullable=True)
+    )
+
     conviction: int | None = Field(default=None, sa_column=Column(SmallInteger, nullable=True))
     conviction_source: str | None = Field(default=None, max_length=10)
     method: str | None = Field(default=None, max_length=100)
@@ -60,7 +64,7 @@ class Forecast(SQLModel, table=True):
     publisher: Optional["Publisher"] = Relationship(back_populates="forecasts")
     reports: list["Report"] = Relationship(back_populates="forecast")
     forecast_sources: list["ForecastSource"] = Relationship(back_populates="forecast")
-<<<<<<< HEAD
+    aggregate_components: list["AggregateComponent"] = Relationship(back_populates="forecast")
 
 
 class ForecastCreate(SQLModel):
@@ -139,6 +143,3 @@ class ForecastRead(SQLModel):
 class ForecastOptionsRead(SQLModel):
     estimate_types: list[str]
     scenarios: list[str]
-=======
-    aggregate_components: list["AggregateComponent"] = Relationship(back_populates="forecast")
->>>>>>> 6ba6d72 (add forecast_aggregates and aggregate_components tables)

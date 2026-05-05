@@ -1,19 +1,22 @@
-#serper_client.py backend/src/services/fetcher/
+# serper_client.py backend/src/services/fetcher/
 
-#Makes the HTTP call to Serper. Returns a list of RawResult objects
+# Makes the HTTP call to Serper. Returns a list of RawResult objects
 
 """Serper search client.
 
 Returns a list of RawResult dataclasses — engine-agnostic structs that
 FetchService maps to Source / Publisher ORM objects.
 """
+
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
 from datetime import date
+
 import requests
 import trafilatura
+
 from config.fetcher import FetcherSettings
 
 logger = logging.getLogger(__name__)
@@ -23,14 +26,14 @@ _SERPER_URL = "https://google.serper.dev/search"
 
 @dataclass
 class RawResult:
-    engine: str                    # "serper"
+    engine: str  # "serper"
     ticker: str
     query: str
     title: str | None
     url: str | None
-    snippet: str | None            # short excerpt returned by Serper
-    #full_text: str | None          # full article body extracted by trafilatura
-    published_date: date | None    # parsed from Serper's date field where available
+    snippet: str | None  # short excerpt returned by Serper
+    # full_text: str | None          # full article body extracted by trafilatura
+    published_date: date | None  # parsed from Serper's date field where available
     authors: list[str] = field(default_factory=list)
     fetch_date: date = field(default_factory=date.today)
 
@@ -62,10 +65,7 @@ class SerperClient:
             return []
 
         data = response.json()
-        return [
-            self._map_result(ticker, query, item)
-            for item in data.get("organic", [])
-        ]
+        return [self._map_result(ticker, query, item) for item in data.get("organic", [])]
 
     @staticmethod
     def _fetch_full_text(url: str) -> str | None:
@@ -83,6 +83,7 @@ class SerperClient:
         if not raw:
             return None
         from dateutil import parser as dateparser
+
         try:
             return dateparser.parse(raw, fuzzy=True).date()
         except Exception:
@@ -97,7 +98,7 @@ class SerperClient:
             title=item.get("title"),
             url=url,
             snippet=item.get("snippet"),
-            #full_text=self._fetch_full_text(url) if url else None,
+            # full_text=self._fetch_full_text(url) if url else None,
             published_date=self._parse_date(item.get("date")),
             fetch_date=date.today(),
         )

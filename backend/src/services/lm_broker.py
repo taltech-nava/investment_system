@@ -23,6 +23,7 @@ def broker_for(task: str) -> "LMBroker":
         model=settings.llm.model_for(task),
     )
 
+
 # Gemini OpenAI-compatible endpoint
 _GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 
@@ -104,7 +105,9 @@ class LMBroker:
 
         try:
             if self.provider == "anthropic":
-                response_text = self._anthropic_ask(system_prompt, user_prompt, target_model, temperature)
+                response_text = self._anthropic_ask(
+                    system_prompt, user_prompt, target_model, temperature
+                )
             else:
                 response = self.client.chat.completions.create(
                     model=target_model,
@@ -143,11 +146,16 @@ class LMBroker:
 
         async def sem_task(user_p: str) -> str:
             async with semaphore:
-                return await self._async_worker(system, user_p, target_model, temperature, calling_module)
+                return await self._async_worker(
+                    system, user_p, target_model, temperature, calling_module
+                )
 
         logger.debug(
             "ask_batch: module=%s tasks=%d concurrency=%d model=%s",
-            calling_module, len(tasks), batch_size, target_model,
+            calling_module,
+            len(tasks),
+            batch_size,
+            target_model,
         )
         results = await asyncio.gather(*(sem_task(t) for t in tasks))
         return list(results)
@@ -231,10 +239,19 @@ class LMBroker:
         if error:
             logger.error(
                 "llm_call module=%s model=%s prompt_len=%d response_len=%d latency=%.3fs error=%r",
-                calling_module, model, prompt_len, response_len, latency, error,
+                calling_module,
+                model,
+                prompt_len,
+                response_len,
+                latency,
+                error,
             )
         else:
             logger.info(
                 "llm_call module=%s model=%s prompt_len=%d response_len=%d latency=%.3fs",
-                calling_module, model, prompt_len, response_len, latency,
+                calling_module,
+                model,
+                prompt_len,
+                response_len,
+                latency,
             )

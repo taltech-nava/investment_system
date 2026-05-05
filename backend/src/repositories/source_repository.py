@@ -1,5 +1,5 @@
-#source_repository.py backend/src/repositories/
-#Add create(), get(), list() methods alongside your existing audit methods
+# source_repository.py backend/src/repositories/
+# Add create(), get(), list() methods alongside your existing audit methods
 
 from __future__ import annotations
 
@@ -7,12 +7,8 @@ from sqlmodel import Session, select
 
 from src.models.source import Source
 
-from sqlalchemy.dialects.postgresql import insert
-from sqlmodel import select
-
 
 class SourceRepository:
-
     # ------------------------------------------------------------------
     # Write
     # ------------------------------------------------------------------
@@ -46,8 +42,8 @@ class SourceRepository:
         """
         results = session.exec(
             select(Source).where(
-                Source.search_engine == "serper",       # type: ignore[union-attr]
-                Source.audit_status.is_(None),          # type: ignore[union-attr]
+                Source.search_engine == "serper",  # type: ignore[union-attr]
+                Source.audit_status.is_(None),  # type: ignore[union-attr]
             )
         ).all()
         return list(results)
