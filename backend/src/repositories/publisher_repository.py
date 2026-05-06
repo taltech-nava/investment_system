@@ -28,5 +28,13 @@ class PublisherRepository:
     def list(self, session: Session) -> list[Publisher]:
         return list(session.exec(select(Publisher)).all())
 
+    def get_or_create(self, session: Session, institution: str) -> Publisher:
+        publisher = self.get_by_institution(session, institution)
+        if publisher:
+            return publisher
+
+        publisher = Publisher(institution=institution)
+        return self.create(session, publisher)
+
 
 publisher_repository = PublisherRepository()

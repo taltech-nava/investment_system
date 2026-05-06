@@ -3,11 +3,12 @@ from __future__ import annotations
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session  # noqa: TC002
+from sqlmodel import Session, select  # noqa: TC002
 
 from database.session import get_session
 from src.models.forecast import Forecast
 from src.models.price import Price
+from src.models.instrument import Instrument
 from src.repositories.forecast_repository import forecast_repository
 from src.repositories.instrument_repository import instrument_repository
 from src.repositories.price_repository import price_repository
@@ -71,3 +72,43 @@ def ingest_yfinance(ticker: str, session: Session = Depends(get_session)) -> dic
 
     session.commit()
     return {"ticker": ticker, "forecasts_saved": saved_forecasts, "prices_saved": saved_price}
+
+
+import yfinance as yf
+#tickers = ["ASML", "AVGO", "AXON"]
+@router.post("/lastprices", summary="Get latest closing prices for all instruments")
+def get_latest_prices(session: Session = Depends(get_session)):
+    instruments = session.exec(select(Instrument)).all()
+    tickers = [i.ticker for i in instruments]
+
+    data = yf.download(tickers, period="1d", auto_adjust=True)
+    latest_closes = data["Close"].iloc[-1].to_dict()
+
+    saved = 0
+    for instrument in instruments:
+        price_value = latest_closes.get(instrument.ticker)
+        if price_value is None:
+            continue
+
+        today = date.today()
+        if price_repository.get_by_instrument_and_date(session, instrument.id, today):
+            continue
+
+        price = Price(
+            instrument_id=instrument.id,
+            price_date=today,
+            price=float(price_value),
+            currency=instrument.currency,
+            data_source="yfinance",
+        )
+        price_repository.save(session, price)
+        saved += 1
+    session.commit()
+
+    return {ticker: price for ticker, price in latest_closes.items()}
+
+
+@router.get("/prices/all", response_model=list[Price])
+def list_prices(session: Session = Depends(get_session)):
+    return list(session.exec(select(Price)).all())
+

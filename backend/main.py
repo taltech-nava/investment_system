@@ -9,6 +9,7 @@ from sqlmodel import Session
 
 from config.logging import configure_logging
 from config.settings import settings
+import logging
 from database.engine import engine, ping_db
 from exceptions import register_exception_handlers
 from routes import (
@@ -19,8 +20,8 @@ from routes import (
     instruments,
     publishers,
     system,
+    fetch,
 )
-from routes.fetch import router as fetch_router
 from src.services.report_service import ReportService
 
 configure_logging(settings.logging.level)
@@ -65,5 +66,6 @@ app.include_router(ingest.router, tags=["Ingestion"])
 app.include_router(forecasts.router, tags=["Forecasts"])
 app.include_router(instruments.router, tags=["Instruments"])
 app.include_router(instrument_classes.router, tags=["Instrument Classes"])
+app.include_router(fetch.router, tags=["Fetch"])
 app.include_router(publishers.router, tags=["Publishers"])
-app.include_router(fetch_router)
+
